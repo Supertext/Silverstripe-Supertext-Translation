@@ -122,7 +122,7 @@ The public demo is a container built from `demo/Dockerfile`: PHP 8.3 with Apache
 | `router.php` | Router for PHP's built-in server (local development) |
 | `stage-module.sh` | Copies the module's files to `demo/module` for local installs |
 | `project/` | The Silverstripe project: `composer.json`/`.lock`, `app/_config/demo.yml` (Elemental on pages, Fluent on blocks), `app/templates/Page.ss` (layout with locale switcher) and `app/src/DemoSetupTask.php` |
-| `_manifest_exclude` | Keeps Silverstripe's class manifest out of `demo/` |
+| `_manifest_exclude` | Keeps Silverstripe's class manifest out of `demo/` (the folder stays in Git archives because Railway builds from one) |
 | `.env.example` | The variables below |
 
 **Demo setup** (`sake tasks:supertext-demo-setup`, every start, only adds what is missing): the four locales (formal tone for German, French, Italian), the group **Editors**, the demo accounts, and the English pages *Welcome* and *Swiss chocolate, shipped worldwide* (the installer's *About Us* and *Contact Us* are archived).
