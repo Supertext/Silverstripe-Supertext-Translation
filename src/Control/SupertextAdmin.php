@@ -110,14 +110,19 @@ class SupertextAdmin extends ModelAdmin
                 <tr><th>%s</th><td>%s</td></tr>
                 <tr><th>%s</th><td><code data-supertext-endpoint>%s</code></td></tr>
                 <tr><th>%s</th><td>%d s</td></tr>
-            </tbody></table></div>',
+            </tbody></table><p class="supertext-help">%s</p></div>',
             _t(self::class . '.CONNECTION', 'Connection'),
             _t(self::class . '.API_KEY', 'API key'),
             $key,
             _t(self::class . '.API', 'API'),
             Convert::raw2xml($settings->baseUrl()),
             _t(self::class . '.TIMEOUT', 'Timeout per locale'),
-            $settings->timeout()
+            $settings->timeout(),
+            _t(
+                self::class . '.KEY_HELP',
+                'No Supertext account yet? <a href="{signup}" target="_blank" rel="noopener">Create one at supertext.com</a>. Generate your API key at <a href="{apikey}" target="_blank" rel="noopener">supertext.com → Integrations → API</a> (requires the Admin role).',
+                ['signup' => Supertext::SIGNUP_URL, 'apikey' => Supertext::API_KEY_URL]
+            )
         );
     }
 

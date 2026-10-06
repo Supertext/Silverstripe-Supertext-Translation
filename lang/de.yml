@@ -8,6 +8,7 @@ de:
     DEFAULT: Standard
     FORMAL: 'Formell (Sie, vous)'
     INFORMAL: 'Informell (du, tu)'
+    KEY_HELP: 'Noch kein Supertext-Konto? <a href="{signup}" target="_blank" rel="noopener">Erstellen Sie eines auf supertext.com</a>. Den API-Schlüssel erzeugen Sie unter <a href="{apikey}" target="_blank" rel="noopener">supertext.com → Integrations → API</a> (erfordert die Admin-Rolle).'
     KEY_MISSING: 'Fehlt: Umgebungsvariable SUPERTEXT_API_KEY setzen'
     KEY_SET: 'Gesetzt (Umgebungsvariable SUPERTEXT_API_KEY)'
     LOCALE: Sprache

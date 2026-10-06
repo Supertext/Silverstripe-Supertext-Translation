@@ -10,3 +10,4 @@
 .supertext-status { margin-bottom: 1rem; }
 .supertext-test { margin: 0 0 1.5rem; }
 .supertext-locales h2:last-child { margin-top: 1.5rem; }
+.supertext-help { color: #566573; font-size: 90%; max-width: 760px; }

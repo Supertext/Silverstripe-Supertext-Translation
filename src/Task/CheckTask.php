@@ -25,6 +25,8 @@ class CheckTask extends BuildTask
         $settings = Supertext::singleton();
         if ($settings->apiKey() === '') {
             $output->writeln('<error>No Supertext API key: set SUPERTEXT_API_KEY.</error>');
+            $output->writeln('No Supertext account yet? Create one at ' . Supertext::SIGNUP_URL);
+            $output->writeln('Generate your API key at ' . Supertext::API_KEY_URL . ' (Integrations → API, requires the Admin role).');
 
             return Command::FAILURE;
         }

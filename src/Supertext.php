@@ -20,7 +20,8 @@ use TractorCow\Fluent\Model\Locale;
  *     api_url: ''              # custom base URL; SUPERTEXT_API_URL wins
  *     timeout: 180             # seconds per locale
  *
- * The API key comes from the SUPERTEXT_API_KEY environment variable.
+ * The API key comes from the SUPERTEXT_API_KEY environment variable. Administrators create a
+ * Supertext account at SIGNUP_URL and generate the key at API_KEY_URL (Admin role required).
  */
 class Supertext implements PermissionProvider
 {
@@ -28,6 +29,12 @@ class Supertext implements PermissionProvider
     use Injectable;
 
     public const PERMISSION = 'SUPERTEXT_TRANSLATE';
+
+    /** Log in to or create a Supertext account (by e-mail). */
+    public const SIGNUP_URL = 'https://www.supertext.com/person/en/account/signin';
+
+    /** Generate the API key: supertext.com → Integrations → API (Admin role in the Supertext account). */
+    public const API_KEY_URL = 'https://www.supertext.com/en/integrations/api';
 
     private static string $environment = 'live';
 

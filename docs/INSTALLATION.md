@@ -7,7 +7,7 @@ For administrators and developers who install and set up the module. Editors fin
 - Silverstripe CMS 6 (tested with 6.2), PHP 8.3 or later
 - [Fluent](https://github.com/tractorcow-farm/silverstripe-fluent) 8 with at least two locales
 - Optional: [Elemental](https://github.com/silverstripe/silverstripe-elemental) 6, with blocks localised directly by Fluent (see [Elemental blocks](#elemental-blocks))
-- A Supertext account with an API key (Supertext → Account → API)
+- A Supertext account with an API key: [create an account or log in](https://www.supertext.com/person/en/account/signin), then [generate the key](https://www.supertext.com/en/integrations/api) (see [API key](#api-key))
 - The server must reach `https://api.supertext.com` over HTTPS
 
 ## Install
@@ -46,6 +46,11 @@ vendor/bin/sake db:build --flush
 Translations already made are normal Fluent content and stay. The table `SupertextTranslation` and the columns `SupertextCode` and `SupertextPoliteness` of `Fluent_Locale` are left in the database (Silverstripe never drops them); delete them by hand if you like.
 
 ## API key
+
+1. **Supertext account.** No Supertext account yet? [Log in or create a Supertext account](https://www.supertext.com/person/en/account/signin) with your e-mail address.
+2. **Generate the key** at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api). This requires the **Admin** role in your Supertext account; ask your Supertext account's administrator otherwise.
+
+The **Supertext** section in the CMS shows these two links under *Connection*, and `vendor/bin/sake tasks:supertext-check` prints them when no key is set.
 
 Set the key as an environment variable, in `.env` or in your hosting's settings:
 
@@ -135,10 +140,10 @@ Translating runs in the editor's request: a few seconds per locale, up to `timeo
 | Symptom | Cause and fix |
 | --- | --- |
 | No *Supertext* tab on pages | The user lacks *Translate content with Supertext*, there are fewer than two locales, or the page isn't saved yet. |
-| *Supertext is not set up yet* on the tab | `SUPERTEXT_API_KEY` is not set on the server. |
+| *Supertext is not set up yet* on the tab | `SUPERTEXT_API_KEY` is not set on the server. Get a key as described under [API key](#api-key). |
 | *This page has no content of its own in … yet* | The page was never saved in the locale you're in. Switch to the locale it was written in. |
 | *You are not allowed to edit this page in …* | Page permissions, or Fluent locale permissions that don't include that locale. |
-| *Authentication failed. Please check the Supertext API key.* | Wrong or revoked key, or a key for another environment. Use *Test connection*. |
+| *Authentication failed. Please check the Supertext API key.* | Wrong or revoked key, or a key for another environment. Use *Test connection*; generate a new key at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api) (Admin role). |
 | *Too many requests to Supertext* | The API's per-second limit was hit repeatedly although the module retries. Try again shortly. |
 | *Timed out waiting for the Supertext translation* or a 502/504 | Very long page: raise `timeout`, PHP's `max_execution_time` and the proxy timeout. |
 | Blocks stay in the source language | Blocks aren't localised by Fluent (see [Elemental blocks](#elemental-blocks)). |

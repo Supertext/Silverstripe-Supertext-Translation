@@ -12,6 +12,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Permission *Translate content with Supertext*; the user must be able to edit the page in each target locale (Fluent locale permissions apply).
 - *Supertext language* and *Form of address* per locale in Fluent's Locales admin.
 - **Supertext** CMS section: API key status, API address, *Test connection* (administrators), the locales and the translation log.
+- Links to create a Supertext account and to generate the API key (supertext.com → Integrations → API, Admin role) in the **Supertext** section, in `supertext-check` when no key is set, and in the installation guide.
 - Settings: `SUPERTEXT_API_KEY` (with or without the `Supertext-Auth-Key` prefix), `SUPERTEXT_API_URL`, environment, timeout and excluded fields in YAML.
 - Tasks `supertext-translate` and `supertext-check`.
 - Retries when the Supertext API answers HTTP 429 (rate limit).

@@ -8,6 +8,7 @@ en:
     DEFAULT: Default
     FORMAL: 'Formal (Sie, vous)'
     INFORMAL: 'Informal (du, tu)'
+    KEY_HELP: 'No Supertext account yet? <a href="{signup}" target="_blank" rel="noopener">Create one at supertext.com</a>. Generate your API key at <a href="{apikey}" target="_blank" rel="noopener">supertext.com → Integrations → API</a> (requires the Admin role).'
     KEY_MISSING: 'Missing: set the environment variable SUPERTEXT_API_KEY'
     KEY_SET: 'Set (environment variable SUPERTEXT_API_KEY)'
     LOCALE: Locale

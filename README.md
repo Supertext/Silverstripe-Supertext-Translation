@@ -31,6 +31,8 @@ vendor/bin/sake db:build --flush
 # .env: SUPERTEXT_API_KEY="…"
 ```
 
+No Supertext account yet? [Create one at supertext.com](https://www.supertext.com/person/en/account/signin). Generate your API key at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api) (requires the Admin role).
+
 ## Demo
 
 `demo/` is a Silverstripe 6 site with Fluent and Elemental, an English sample page and German, French and Italian (Switzerland) locales, deployed to Railway from this repository. See the [developer guide](docs/DEVELOPER.md#demo-railway).
