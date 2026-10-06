@@ -1,0 +1,76 @@
+en:
+  Supertext\Silverstripe\Control\SupertextAdmin:
+    API: API
+    API_KEY: 'API key'
+    CODE: 'Supertext language'
+    CONNECTED: 'Connected. The API key works.'
+    CONNECTION: Connection
+    DEFAULT: Default
+    FORMAL: 'Formal (Sie, vous)'
+    INFORMAL: 'Informal (du, tu)'
+    KEY_MISSING: 'Missing: set the environment variable SUPERTEXT_API_KEY'
+    KEY_SET: 'Set (environment variable SUPERTEXT_API_KEY)'
+    LOCALE: Locale
+    LOCALES: Locales
+    LOCALES_HELP: 'The Fluent locales with the Supertext language and form of address they are translated with. Change them under <a href="{link}">Locales</a>.'
+    LOG: Translations
+    MENUTITLE: Supertext
+    NO_KEY: 'No API key: set the SUPERTEXT_API_KEY environment variable.'
+    POLITENESS: 'Form of address'
+    TEST: 'Test connection'
+    TESTING: Testing…
+    TIMEOUT: 'Timeout per locale'
+  Supertext\Silverstripe\Extension\LocaleExtension:
+    CODE: 'Supertext language'
+    CODE_HELP: 'Language code sent to Supertext. Leave empty to use {code}.'
+    DEFAULT: Default
+    FORMAL: 'Formal (Sie, vous)'
+    INFORMAL: 'Informal (du, tu)'
+    POLITENESS: 'Form of address'
+    POLITENESS_HELP: 'How Supertext addresses the reader in this language.'
+    db_SupertextCode: 'Supertext code'
+    db_SupertextPoliteness: 'Supertext politeness'
+  Supertext\Silverstripe\Extension\SupertextCMSMainExtension:
+    DONE: 'Translated into {locales} (saved as drafts).'
+    FAILED: 'Failed: {errors}'
+    NONE: 'Choose at least one locale to translate into.'
+    SKIPPED: 'Already translated, skipped: {locales}.'
+  Supertext\Silverstripe\Extension\SupertextPageExtension:
+    BUSY: Translating…
+    BUTTON: Translate
+    EXISTS: 'Already translated'
+    FROM: 'From <strong>{locale}</strong>, the locale you are editing.'
+    HINT: 'Supertext translates the saved draft of this locale: save your changes first. The translations are saved as drafts; review and publish them in each locale.'
+    INTO: Into
+    LAST: 'Translated with Supertext on {date}'
+    NOT_CONFIGURED: 'Supertext is not set up yet: an administrator needs to set SUPERTEXT_API_KEY.'
+    NO_SOURCE: 'This page has no content of its own in {locale} yet. Switch to a locale it was written in to translate it from there.'
+    OVERWRITE: 'Overwrite existing translations'
+    OVERWRITE_HELP: 'The selected locales that already have their own content get a new translation of {locale}: page fields and content blocks. Changes made in those locales are lost. Leave this off to translate only the missing locales.'
+    TAB: Supertext
+    TITLE: 'Translate with Supertext'
+  Supertext\Silverstripe\Model\TranslationLog:
+    PLURALNAME: 'Supertext translations'
+    PLURALS:
+      one: 'A Supertext translation'
+      other: '{count} Supertext translations'
+    SINGULARNAME: 'Supertext translation'
+    db_Message: Message
+    db_RecordClass: 'Record class'
+    db_RecordID: 'Record ID'
+    db_RecordTitle: 'Record title'
+    db_SourceLocale: 'Source locale'
+    db_Status: Status
+    db_TargetLocale: 'Target locale'
+    has_one_Member: Member
+  Supertext\Silverstripe\Service\Translator:
+    FORBIDDEN: 'You are not allowed to edit this page in {locale}.'
+    NO_KEY: 'No Supertext API key is configured. Set the SUPERTEXT_API_KEY environment variable.'
+    NO_LOCALE: 'Unknown locale {locale}.'
+    NO_SOURCE: 'This page has no content of its own in {locale} to translate from.'
+    SKIPPED: 'Already translated.'
+  Supertext\Silverstripe\Supertext:
+    PERMISSION: 'Translate content with Supertext'
+    PERMISSION_CATEGORY: Supertext
+    PERMISSION_HELP: 'Send pages to Supertext and save the translations in other locales. Editing the page and the locales is still required.'
+    UNREACHABLE: 'The Supertext service could not be reached.'

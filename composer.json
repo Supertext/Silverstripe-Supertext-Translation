@@ -1,0 +1,54 @@
+{
+    "name": "supertext/silverstripe-supertext-translation",
+    "description": "Supertext AI translation for Silverstripe CMS: translate pages and their Elemental blocks into the other Fluent locales.",
+    "type": "silverstripe-vendormodule",
+    "license": "MIT",
+    "keywords": [
+        "silverstripe",
+        "fluent",
+        "translation",
+        "supertext",
+        "localisation",
+        "machine translation"
+    ],
+    "authors": [
+        {
+            "name": "Supertext AG",
+            "email": "support@supertext.com",
+            "homepage": "https://www.supertext.com"
+        }
+    ],
+    "homepage": "https://github.com/Supertext/Silverstripe-Supertext-Translation",
+    "require": {
+        "php": "^8.3",
+        "silverstripe/cms": "^6",
+        "tractorcow/silverstripe-fluent": "^8",
+        "guzzlehttp/guzzle": "^7.9"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Supertext\\Silverstripe\\": "src/",
+            "Supertext\\Silverstripe\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "expose": [
+            "client"
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "archive": {
+        "exclude": [
+            "/demo",
+            "/tests",
+            "/docs",
+            "/.github",
+            "/phpunit.xml.dist",
+            "/CLAUDE.md"
+        ]
+    }
+}

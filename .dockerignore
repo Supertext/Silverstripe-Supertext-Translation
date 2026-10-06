@@ -1,0 +1,10 @@
+.git
+vendor
+demo/module
+demo/project/vendor
+demo/project/public/_resources
+demo/project/public/assets
+demo/project/silverstripe-cache
+demo/project/.env
+tests/docs/node_modules
+docs/images

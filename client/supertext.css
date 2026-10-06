@@ -1,0 +1,12 @@
+.supertext-intro h3 { margin: 0 0 .25rem; }
+.supertext-targets .optionset { list-style: none; padding: 0; }
+.supertext-targets li { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; margin: .3rem 0; }
+.supertext-targets code { font-size: 85%; color: #566573; background: none; }
+.supertext-chip { font-size: 11px; padding: 1px 8px; border-radius: 9px; background: #e9eef3; color: #43536d; }
+.field.supertext-overwrite { border-left: 3px solid #d97706; background: #fff7ed; padding: .6rem .8rem; margin: .5rem 0 1rem; }
+.field.supertext-overwrite.supertext-hidden { display: none; }
+.supertext-hint { color: #566573; font-size: 90%; }
+.supertext-table { max-width: 760px; }
+.supertext-status { margin-bottom: 1rem; }
+.supertext-test { margin: 0 0 1.5rem; }
+.supertext-locales h2:last-child { margin-top: 1.5rem; }

@@ -1,0 +1,17 @@
+---
+Name: supertext-translation
+After:
+  - '#fluentcms'
+  - '#fluentcms-pages'
+---
+SilverStripe\CMS\Model\SiteTree:
+  extensions:
+    SupertextPageExtension: Supertext\Silverstripe\Extension\SupertextPageExtension
+
+SilverStripe\CMS\Controllers\CMSMain:
+  extensions:
+    SupertextCMSMainExtension: Supertext\Silverstripe\Extension\SupertextCMSMainExtension
+
+TractorCow\Fluent\Model\Locale:
+  extensions:
+    SupertextLocaleExtension: Supertext\Silverstripe\Extension\LocaleExtension

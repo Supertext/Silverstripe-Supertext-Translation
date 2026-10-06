@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer
+      - name: Lint
+        run: find src tests demo/project/app -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+      - name: Install
+        run: composer install --no-interaction --no-progress
+      - name: Unit tests
+        run: vendor/bin/phpunit
+
+  demo:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -proot" --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build the demo image
+        run: docker build -f demo/Dockerfile -t supertext-silverstripe-demo .
+      - name: Start the stand-in API
+        run: node tests/docs/stand-in.mjs > stand-in.log 2>&1 &
+      - name: Start the demo twice, check the accounts, translate the sample article
+        env:
+          MYSQL_URL: mysql://root:root@127.0.0.1:3306/railway
+        run: tests/demo-check.sh
+      - if: failure()
+        run: docker logs demo 2>&1 | tail -100; cat stand-in.log

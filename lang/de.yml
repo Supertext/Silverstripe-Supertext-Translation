@@ -1,0 +1,76 @@
+de:
+  Supertext\Silverstripe\Control\SupertextAdmin:
+    API: API
+    API_KEY: API-Schlüssel
+    CODE: Supertext-Sprache
+    CONNECTED: 'Verbunden. Der API-Schlüssel funktioniert.'
+    CONNECTION: Verbindung
+    DEFAULT: Standard
+    FORMAL: 'Formell (Sie, vous)'
+    INFORMAL: 'Informell (du, tu)'
+    KEY_MISSING: 'Fehlt: Umgebungsvariable SUPERTEXT_API_KEY setzen'
+    KEY_SET: 'Gesetzt (Umgebungsvariable SUPERTEXT_API_KEY)'
+    LOCALE: Sprache
+    LOCALES: Sprachen
+    LOCALES_HELP: 'Die Fluent-Sprachen mit der Supertext-Sprache und der Anrede, mit der übersetzt wird. Ändern lässt sich das unter <a href="{link}">Locales</a>.'
+    LOG: Übersetzungen
+    MENUTITLE: Supertext
+    NO_KEY: 'Kein API-Schlüssel: Umgebungsvariable SUPERTEXT_API_KEY setzen.'
+    POLITENESS: Anrede
+    TEST: 'Verbindung testen'
+    TESTING: 'Wird getestet …'
+    TIMEOUT: 'Zeitlimit pro Sprache'
+  Supertext\Silverstripe\Extension\LocaleExtension:
+    CODE: Supertext-Sprache
+    CODE_HELP: 'Sprachcode, der an Supertext geht. Leer lassen, um {code} zu verwenden.'
+    DEFAULT: Standard
+    FORMAL: 'Formell (Sie, vous)'
+    INFORMAL: 'Informell (du, tu)'
+    POLITENESS: Anrede
+    POLITENESS_HELP: 'Wie Supertext die Leserinnen und Leser in dieser Sprache anspricht.'
+    db_SupertextCode: Supertext-Code
+    db_SupertextPoliteness: Supertext-Anrede
+  Supertext\Silverstripe\Extension\SupertextCMSMainExtension:
+    DONE: 'Übersetzt in {locales} (als Entwürfe gespeichert).'
+    FAILED: 'Fehlgeschlagen: {errors}'
+    NONE: 'Wählen Sie mindestens eine Sprache, in die übersetzt werden soll.'
+    SKIPPED: 'Bereits übersetzt, übersprungen: {locales}.'
+  Supertext\Silverstripe\Extension\SupertextPageExtension:
+    BUSY: 'Wird übersetzt …'
+    BUTTON: Übersetzen
+    EXISTS: 'Bereits übersetzt'
+    FROM: 'Aus <strong>{locale}</strong>, der Sprache, die Sie gerade bearbeiten.'
+    HINT: 'Supertext übersetzt den gespeicherten Entwurf dieser Sprache: Speichern Sie Ihre Änderungen zuerst. Die Übersetzungen werden als Entwürfe gespeichert; prüfen und veröffentlichen Sie sie in jeder Sprache.'
+    INTO: In
+    LAST: 'Am {date} mit Supertext übersetzt'
+    NOT_CONFIGURED: 'Supertext ist noch nicht eingerichtet: Eine Administratorin oder ein Administrator muss SUPERTEXT_API_KEY setzen.'
+    NO_SOURCE: 'Diese Seite hat in {locale} noch keinen eigenen Inhalt. Wechseln Sie in eine Sprache, in der sie geschrieben wurde, und übersetzen Sie von dort.'
+    OVERWRITE: 'Bestehende Übersetzungen überschreiben'
+    OVERWRITE_HELP: 'Gewählte Sprachen, die bereits eigenen Inhalt haben, erhalten eine neue Übersetzung aus {locale}: Seitenfelder und Inhaltsblöcke. Änderungen in diesen Sprachen gehen verloren. Ausgeschaltet lassen, um nur fehlende Sprachen zu übersetzen.'
+    TAB: Supertext
+    TITLE: 'Mit Supertext übersetzen'
+  Supertext\Silverstripe\Model\TranslationLog:
+    PLURALNAME: Supertext-Übersetzungen
+    PLURALS:
+      one: 'Eine Supertext-Übersetzung'
+      other: '{count} Supertext-Übersetzungen'
+    SINGULARNAME: Supertext-Übersetzung
+    db_Message: Meldung
+    db_RecordClass: Datensatzklasse
+    db_RecordID: Datensatz-ID
+    db_RecordTitle: Datensatztitel
+    db_SourceLocale: Ausgangssprache
+    db_Status: Status
+    db_TargetLocale: Zielsprache
+    has_one_Member: Mitglied
+  Supertext\Silverstripe\Service\Translator:
+    FORBIDDEN: 'Sie dürfen diese Seite in {locale} nicht bearbeiten.'
+    NO_KEY: 'Es ist kein Supertext-API-Schlüssel eingerichtet. Setzen Sie die Umgebungsvariable SUPERTEXT_API_KEY.'
+    NO_LOCALE: 'Unbekannte Sprache {locale}.'
+    NO_SOURCE: 'Diese Seite hat in {locale} keinen eigenen Inhalt, aus dem übersetzt werden kann.'
+    SKIPPED: 'Bereits übersetzt.'
+  Supertext\Silverstripe\Supertext:
+    PERMISSION: 'Inhalte mit Supertext übersetzen'
+    PERMISSION_CATEGORY: Supertext
+    PERMISSION_HELP: 'Seiten an Supertext senden und die Übersetzungen in anderen Sprachen speichern. Die Berechtigung, die Seite und die Sprachen zu bearbeiten, ist weiterhin nötig.'
+    UNREACHABLE: 'Der Supertext-Dienst ist nicht erreichbar.'

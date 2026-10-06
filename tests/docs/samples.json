@@ -1,0 +1,46 @@
+{
+ "de": {
+  "Welcome": "Willkommen",
+  "A Silverstripe demo site translated with Supertext.": "Eine Silverstripe-Demosite, übersetzt mit Supertext.",
+  "Swiss chocolate, shipped worldwide": "Schweizer Schokolade, weltweit versandt",
+  "Swiss chocolate": "Schweizer Schokolade",
+  "How a small family business in Bern brings handmade pralines to 40 countries.": "Wie ein kleines Familienunternehmen in Bern handgefertigte Pralinen in 40 Länder bringt.",
+  "From Bern to the world": "Von Bern in die Welt",
+  "Handmade in Bern": "Handgefertigt in Bern",
+  "Shipped in 48 hours": "Versand in 48 Stunden",
+  "<p>This site was written in <strong>English</strong>. Open a page in the CMS and use the <em>Supertext</em> tab to create the German, French and Italian versions.</p>": "<p>Diese Seite wurde auf <strong>Englisch</strong> verfasst. Öffnen Sie eine Seite im CMS und nutzen Sie das <em>Supertext-Tab</em>, um die deutschen, französischen und italienischen Versionen zu erstellen.</p>",
+  "<p>Every praline is made by hand in our <strong>Bern</strong> workshop. Read more on <a href=\"https://www.supertext.com\">our website</a>.</p><ul><li>Fresh ingredients from local farmers</li><li>Climate-neutral delivery within 48 hours</li></ul>": "<p>Jede Praline wird in unserer <strong>Berner</strong> Werkstatt von Hand hergestellt. Lesen Sie mehr auf <a href=\"https://www.supertext.com\">unserer Website</a>.</p><ul><li>Frische Zutaten von lokalen Bauern</li><li>Klimaneutrale Lieferung innerhalb von 48 Stunden</li></ul>",
+  "<p>Every praline is filled and decorated by hand.</p>": "<p>Jede Praline wird von Hand gefüllt und verziert.</p>",
+  "<p>Cool packaging keeps the chocolate fresh on its way.</p>": "<p>Die coole Verpackung hält die Schokolade auf dem Weg frisch.</p>"
+ },
+ "fr": {
+  "Welcome": "Bienvenue",
+  "Home": "Accueil",
+  "A Silverstripe demo site translated with Supertext.": "Un site de démonstration Silverstripe traduit avec Supertext.",
+  "Swiss chocolate, shipped worldwide": "Chocolat suisse, expédié dans le monde entier",
+  "Swiss chocolate": "Chocolat suisse",
+  "How a small family business in Bern brings handmade pralines to 40 countries.": "Comment une petite entreprise familiale de Berne exporte des pralines artisanales dans 40 pays.",
+  "From Bern to the world": "De Berne vers le monde",
+  "Handmade in Bern": "Fabriqué à la main à Berne",
+  "Shipped in 48 hours": "Expédié en 48 heures",
+  "<p>This site was written in <strong>English</strong>. Open a page in the CMS and use the <em>Supertext</em> tab to create the German, French and Italian versions.</p>": "<p>Ce site a été rédigé en <strong>anglais</strong>. Ouvrez une page dans le CMS et utilisez l’onglet <em>Supertext</em> pour créer les versions allemande, française et italienne.</p>",
+  "<p>Every praline is made by hand in our <strong>Bern</strong> workshop. Read more on <a href=\"https://www.supertext.com\">our website</a>.</p><ul><li>Fresh ingredients from local farmers</li><li>Climate-neutral delivery within 48 hours</li></ul>": "<p>Chaque praline est confectionnée à la main dans notre <strong>atelier</strong> de Berne. En savoir plus sur <a href=\"https://www.supertext.com\">notre site</a>.</p><ul><li>Ingrédients frais provenant de fermes locales</li><li>Livraison neutre en carbone dans les 48 heures</li></ul>",
+  "<p>Every praline is filled and decorated by hand.</p>": "<p>Chaque praline est remplie et décorée à la main.</p>",
+  "<p>Cool packaging keeps the chocolate fresh on its way.</p>": "<p>Un emballage frais permet de conserver la fraîcheur du chocolat pendant le transport.</p>"
+ },
+ "it": {
+  "Welcome": "Benvenuti",
+  "Home": "Casa",
+  "A Silverstripe demo site translated with Supertext.": "Un sito demo Silverstripe tradotto con Supertext.",
+  "Swiss chocolate, shipped worldwide": "Cioccolato svizzero, spedito in tutto il mondo",
+  "Swiss chocolate": "Cioccolato svizzero",
+  "How a small family business in Bern brings handmade pralines to 40 countries.": "Come un piccolo esercizio a conduzione familiare di Berna porta praline artigianali in 40 paesi.",
+  "From Bern to the world": "Da Berna al mondo",
+  "Handmade in Bern": "Realizzato a mano a Berna",
+  "Shipped in 48 hours": "Spedito in 48 ore",
+  "<p>This site was written in <strong>English</strong>. Open a page in the CMS and use the <em>Supertext</em> tab to create the German, French and Italian versions.</p>": "<p>Questo sito è stato scritto in <strong>inglese</strong>. Aprire una pagina nel CMS e utilizzare la scheda <em>Supertext</em> per creare le versioni in tedesco, francese e italiano.</p>",
+  "<p>Every praline is made by hand in our <strong>Bern</strong> workshop. Read more on <a href=\"https://www.supertext.com\">our website</a>.</p><ul><li>Fresh ingredients from local farmers</li><li>Climate-neutral delivery within 48 hours</li></ul>": "<p>Ogni pralina è realizzata a mano nel nostro <strong>laboratorio</strong> di Berna. Per maggiori informazioni, visiti il <a href=\"https://www.supertext.com\">nostro sito web</a>.</p><ul><li>Ingredienti freschi provenienti da agricoltori locali</li><li>Consegna a impatto zero sul clima entro 48 ore</li></ul>",
+  "<p>Every praline is filled and decorated by hand.</p>": "<p>Ogni pralina è farcita e decorata a mano.</p>",
+  "<p>Cool packaging keeps the chocolate fresh on its way.</p>": "<p>Un imballaggio fresco mantiene il cioccolato fresco durante il trasporto.</p>"
+ }
+}
