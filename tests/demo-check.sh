@@ -24,8 +24,9 @@ start() {
 
 start
 start   # second start: nothing duplicated or changed
-docker logs demo 2>&1 | grep -q 'DEMO_EDITOR: account exists, left unchanged'
-if docker logs demo 2>&1 | grep -qF -e "$DEMO_ADMIN_PASSWORD" -e "$DEMO_EDITOR_PASSWORD"; then echo "A password appeared in the log"; exit 1; fi
+docker logs demo 2>&1 | grep > /dev/null 'DEMO_EDITOR: account exists, left unchanged'
+logs=$(docker logs demo 2>&1)
+if grep -qF -e "$DEMO_ADMIN_PASSWORD" -e "$DEMO_EDITOR_PASSWORD" <<< "$logs"; then echo "A password appeared in the log"; exit 1; fi
 
 test "$(q "select count(*) from Member")" = 2
 test "$(q "select g.Code from Member m join Group_Members gm on gm.MemberID=m.ID join \`Group\` g on g.ID=gm.GroupID where m.Email='ci-admin@example.com'")" = administrators
@@ -34,16 +35,16 @@ test "$(q "select count(*) from Permission p join \`Group\` g on g.ID=p.GroupID 
 test "$(q "select group_concat(Locale order by Sort) from Fluent_Locale")" = "en_US,de_CH,fr_CH,it_CH"
 echo "accounts and locales OK"
 
-sake tasks:supertext-check | grep -q 'The API key works'
+sake tasks:supertext-check | grep > /dev/null 'The API key works'
 PAGE=$(q "select ID from SiteTree where URLSegment='swiss-chocolate-shipped-worldwide'")
 sake tasks:supertext-translate --page="$PAGE" --from=en_US --member=ci-editor@example.com | tee /tmp/translate.log
 test "$(grep -c ': translated' /tmp/translate.log)" = 3
-sake tasks:supertext-translate --page="$PAGE" --from=en_US --to=de_CH --member=ci-editor@example.com | grep -q 'skipped'
+sake tasks:supertext-translate --page="$PAGE" --from=en_US --to=de_CH --member=ci-editor@example.com | grep > /dev/null 'skipped'
 
 test "$(q "select Title from SiteTree_Localised where RecordID=$PAGE and Locale='de_CH'")" = "Schweizer Schokolade, weltweit versandt"
 test "$(q "select URLSegment from SiteTree_Localised where RecordID=$PAGE and Locale='fr_CH'")" = "chocolat-suisse-expedie-dans-le-monde-entier"
-q "select HTML from ElementContent_Localised where Locale='de_CH'" | grep -q '<strong>Berner</strong>'
-q "select HTML from ElementContent_Localised where Locale='de_CH'" | grep -q 'href="https://www.supertext.com"'
+q "select HTML from ElementContent_Localised where Locale='de_CH'" | grep > /dev/null '<strong>Berner</strong>'
+q "select HTML from ElementContent_Localised where Locale='de_CH'" | grep > /dev/null 'href="https://www.supertext.com"'
 test "$(q "select count(*) from Element_Localised where Locale='it_CH'")" = 3
 test "$(q "select Title from Element_Localised where Locale='fr_CH' order by RecordID limit 1")" = "De Berne vers le monde"
 test "$(q "select count(*) from SupertextTranslation where Status='translated'")" = 3
