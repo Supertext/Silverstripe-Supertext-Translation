@@ -39,6 +39,8 @@ done
 echo "[demo] Schema up to date."
 sake tasks:supertext-demo-setup | grep '\[demo\]' || true
 
+# Exactly one Apache MPM (prefork, for mod_php); Railway's runtime otherwise reports more than one.
+rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.*
 sed -ri "s/Listen [0-9]+/Listen ${PORT:-8080}/" /etc/apache2/ports.conf
 sed -ri "s/<VirtualHost \*:[0-9]+>/<VirtualHost *:${PORT:-8080}>/" /etc/apache2/sites-available/000-default.conf
 echo "[demo] Starting Apache on port ${PORT:-8080}."
