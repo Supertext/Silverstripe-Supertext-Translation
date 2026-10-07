@@ -23,7 +23,7 @@ vendor/bin/sake db:build --flush
 `db:build` adds the table `SupertextTranslation` (the translation log) and two fields to Fluent's locales. The module adds:
 
 - a **Supertext** tab to every page in the CMS (for users with the Supertext permission),
-- a **Supertext** section in the CMS menu: connection status, *Test connection* (administrators), the locales and the translation log,
+- a **Supertext** section in the CMS menu: connection status, the installed plugin version, *Test connection* (administrators), the locales and the translation log,
 - *Supertext language* and *Form of address* to each locale under **Locales**,
 - the tasks `supertext-translate` and `supertext-check`.
 
@@ -34,7 +34,7 @@ composer update supertext/silverstripe-supertext-translation
 vendor/bin/sake db:build --flush
 ```
 
-See [CHANGELOG.md](../CHANGELOG.md).
+See [CHANGELOG.md](../CHANGELOG.md). The installed version is shown under **Supertext → Connection → Plugin version** (as Composer installed it: a release such as `0.1.0`, linked to its release notes on GitHub, or a branch such as `dev-main`; `unknown` if Composer's data isn't available).
 
 ### Uninstall
 
@@ -62,7 +62,7 @@ You can paste it with or without the `Supertext-Auth-Key ` prefix that Supertext
 
 Check it under **Supertext → Test connection** (administrators) or with `vendor/bin/sake tasks:supertext-check`. Both call a cost-free endpoint of the Supertext API.
 
-![The Supertext section: "Connected. The API key works.", the API key's source, the live API address, the timeout, the Test connection button, and the locales with their Supertext language and form of address](images/06-supertext-admin.png)
+![The Supertext section: "Connected. The API key works.", the API key's source, the live API address, the timeout, the plugin version, the links to create a Supertext account and generate the API key, the Test connection button, and the locales with their Supertext language and form of address](images/06-supertext-admin.png)
 
 ## Locales
 

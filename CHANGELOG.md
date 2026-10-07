@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## Unreleased
 
+### Added
+
+- The **Supertext** CMS section shows the installed plugin version under *Connection*, linked to its GitHub release notes for released versions.
+
 ## 0.1.0 — 2026-10-07
 
 ### Added

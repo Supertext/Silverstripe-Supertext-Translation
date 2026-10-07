@@ -21,6 +21,7 @@ de:
     TEST: 'Verbindung testen'
     TESTING: 'Wird getestet …'
     TIMEOUT: 'Zeitlimit pro Sprache'
+    VERSION: Plugin-Version
   Supertext\Silverstripe\Extension\LocaleExtension:
     CODE: Supertext-Sprache
     CODE_HELP: 'Sprachcode, der an Supertext geht. Leer lassen, um {code} zu verwenden.'

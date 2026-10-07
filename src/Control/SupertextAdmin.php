@@ -15,6 +15,7 @@ use SilverStripe\Security\Permission;
 use SilverStripe\View\Requirements;
 use Supertext\Silverstripe\Api\SupertextException;
 use Supertext\Silverstripe\Model\TranslationLog;
+use Supertext\Silverstripe\PluginVersion;
 use Supertext\Silverstripe\Supertext;
 use TractorCow\Fluent\Control\LocaleAdmin;
 use TractorCow\Fluent\Model\Locale;
@@ -110,6 +111,7 @@ class SupertextAdmin extends ModelAdmin
                 <tr><th>%s</th><td>%s</td></tr>
                 <tr><th>%s</th><td><code data-supertext-endpoint>%s</code></td></tr>
                 <tr><th>%s</th><td>%d s</td></tr>
+                <tr><th>%s</th><td>%s</td></tr>
             </tbody></table><p class="supertext-help">%s</p></div>',
             _t(self::class . '.CONNECTION', 'Connection'),
             _t(self::class . '.API_KEY', 'API key'),
@@ -118,12 +120,26 @@ class SupertextAdmin extends ModelAdmin
             Convert::raw2xml($settings->baseUrl()),
             _t(self::class . '.TIMEOUT', 'Timeout per locale'),
             $settings->timeout(),
+            _t(self::class . '.VERSION', 'Plugin version'),
+            $this->versionHtml(),
             _t(
                 self::class . '.KEY_HELP',
                 'No Supertext account yet? <a href="{signup}" target="_blank" rel="noopener">Create one at supertext.com</a>. Generate your API key at <a href="{apikey}" target="_blank" rel="noopener">supertext.com → Integrations → API</a> (requires the Admin role).',
                 ['signup' => Supertext::SIGNUP_URL, 'apikey' => Supertext::API_KEY_URL]
             )
         );
+    }
+
+    /** The installed version, linked to its GitHub release when it is one (X.Y.Z). */
+    private function versionHtml(): string
+    {
+        $version = PluginVersion::current();
+        $url = PluginVersion::releaseUrl($version);
+        if ($url === null) {
+            return Convert::raw2xml($version);
+        }
+
+        return sprintf('<a href="%s" target="_blank" rel="noopener">%s</a>', Convert::raw2att($url), Convert::raw2xml($version));
     }
 
     private function localesHtml(): string

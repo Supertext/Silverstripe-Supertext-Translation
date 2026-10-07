@@ -32,7 +32,8 @@ apply(): in the target locale (draft): set the fields on each owned object and t
 | `src/Extension/SupertextPageExtension.php` | The Supertext tab (fields are not saved into the record: `saveSupertext*()` no-ops) |
 | `src/Extension/SupertextCMSMainExtension.php` | The form action on `CMSMain` |
 | `src/Extension/LocaleExtension.php` | `SupertextCode`, `SupertextPoliteness` on Fluent's `Locale` |
-| `src/Control/SupertextAdmin.php` | The *Supertext* CMS section: status, *Test connection*, locales, log |
+| `src/Control/SupertextAdmin.php` | The *Supertext* CMS section: status, plugin version, *Test connection*, locales, log |
+| `src/PluginVersion.php` | The installed version from `Composer\InstalledVersions` (no second copy in the code) and its GitHub release link for `X.Y.Z` / `vX.Y.Z`; no Silverstripe classes, unit-tested |
 | `src/Model/TranslationLog.php` | Table `SupertextTranslation`: one row per record and target locale and run |
 | `src/Task/` | `sake tasks:supertext-translate --page=<id> --from=en_US [--to=de_CH,fr_CH] [--overwrite] [--member=<email>]`, `sake tasks:supertext-check` |
 | `client/` | Tab script (overwrite option, busy state, submitting buttons outside the toolbar) and styles, exposed to `_resources` |

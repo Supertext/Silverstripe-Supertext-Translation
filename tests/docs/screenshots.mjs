@@ -101,6 +101,10 @@ async function pageId(page) {
   await page.locator('button.supertext-test').click()
   await page.locator('.toast, .notice-item').first().waitFor({ timeout: 30_000 })
   await page.waitForTimeout(500)
+  // Clicking the button scrolls it into view; show the section from the top (Connection).
+  await page.evaluate(() => document.querySelectorAll('.cms-content *').forEach((e) => { if (e.scrollTop) e.scrollTop = 0 }))
+  await page.mouse.move(1200, 800)
+  await page.waitForTimeout(300)
   await publicUrls(page)
   await shot(page, panel(page), '06-supertext-admin.png')
 
