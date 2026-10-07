@@ -173,10 +173,14 @@ The script shows the live API address instead of the stand-in's and the public d
 
 ## Releasing
 
-1. Move the *Unreleased* entries in `CHANGELOG.md` under the new version.
-2. Update `lang/en.yml` with the text collector if strings changed, and `lang/de.yml` to match.
-3. Tag `X.Y.Z` on `main`. Submitting the package to Packagist is planned.
+Releases are published by `.github/workflows/release.yml` when the version is officially bumped; nobody tags or creates releases by hand.
 
+1. Check that if strings changed, `lang/en.yml` is regenerated with the text collector and `lang/de.yml` matches.
+2. Move the *Unreleased* entries in `CHANGELOG.md` under a new `## X.Y.Z — YYYY-MM-DD` section, and keep an empty *Unreleased* above it.
+3. There is no version field to change: Composer takes the version from the Git tag the workflow creates.
+4. Push to `main`. The workflow tags `vX.Y.Z` and creates the GitHub release with the CHANGELOG section as notes (0.x versions as pre-releases). A push that adds no new version does nothing, and a version that is already released is skipped. After fixing a failed run, start it again with *Run workflow* on the *Release* workflow.
+
+Submitting the package to Packagist is planned.
 ## Conventions
 
 - PSR-12, PHP 8.3, typed properties; keep `src/Api/` free of Silverstripe classes.
