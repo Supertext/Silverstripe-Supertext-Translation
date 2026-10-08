@@ -23,6 +23,10 @@ Everywhere an administrator enters or is told about the API key — the settings
 
 Wording: "No Supertext account yet? Create one at supertext.com. Generate your API key at supertext.com → Integrations → API (requires the Admin role)." In the UI, links open in a new tab (`target="_blank" rel="noopener"`); where the CMS shows plain text only, use the bare URLs. New screens or messages that mention the key get the links too.
 
+## UI languages (always)
+
+The plugin's own UI (buttons, panels, dialogs, settings, permissions, messages) is available in English, German, French and Italian through the CMS's own translation mechanism, so it follows the user's back-end language. New or changed strings get all four languages in the same commit. Formal address (Sie, vous, Lei), the CMS's own terms in each language, "Supertext", placeholders and URLs never translated.
+
 ## Plugin list (always)
 
 `README.md` ends with the shared list of all Supertext plugins (between the `<!-- supertext-plugins:start -->` and `<!-- supertext-plugins:end -->` markers). It is identical in every Supertext plugin repo: when a plugin is added, renamed or its description changes, update the list in **all** repos, not just this one.
@@ -77,7 +81,7 @@ Lessons from the live API, apply them here: header `Authorization: Supertext-Aut
 - Test UI changes in the demo project (`demo/stage-module.sh`, then see `docs/DEVELOPER.md` → Local development) and regenerate the screenshots they affect (`tests/docs/screenshots.mjs`).
 - New settings go in `src/Supertext.php` or `src/Service/Translator.php` (config) **and** the settings table in `docs/INSTALLATION.md`.
 - Field rules live in `src/Service/Translator.php` (`collect`, `translatableFields`); keep "Field rules" in `docs/DEVELOPER.md` and "What is translated" in `docs/USER_GUIDE.md` in sync.
-- Strings: `_t()` with English and German in `lang/` (regenerate `en.yml` with the text collector, then update `de.yml`).
+- Strings: `_t()` with English, German, French and Italian in `lang/` (regenerate `en.yml` with the text collector, then update `de.yml`, `fr.yml` and `it.yml`).
 - Keep `src/Api/` free of Silverstripe classes (unit tests run without Silverstripe).
 - Buttons outside the CMS's bottom toolbar must be submitted by `client/supertext.js` (the CMS ignores them otherwise).
 - The permission code `SUPERTEXT_TRANSLATE`, the table `SupertextTranslation` and the locale fields `SupertextCode`/`SupertextPoliteness` are stored in users' databases; renaming them is a breaking change.

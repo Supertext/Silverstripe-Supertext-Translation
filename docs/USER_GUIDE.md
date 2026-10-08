@@ -2,6 +2,8 @@
 
 For editors who translate pages in the Silverstripe CMS. Your administrator has installed the module and set up the locales (see the [installation guide](INSTALLATION.md)).
 
+The Supertext tab and its messages appear in your CMS interface language (English, German, French or Italian).
+
 ## Translate a page
 
 1. In **Pages**, choose the locale you translate **from** with the locale switcher at the top of the CMS menu (usually English), and open the page.

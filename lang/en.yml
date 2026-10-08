@@ -16,7 +16,6 @@ en:
     LOCALES_HELP: 'The Fluent locales with the Supertext language and form of address they are translated with. Change them under <a href="{link}">Locales</a>.'
     LOG: Translations
     MENUTITLE: Supertext
-    NO_KEY: 'No API key: set the SUPERTEXT_API_KEY environment variable.'
     POLITENESS: 'Form of address'
     TEST: 'Test connection'
     TESTING: Testing…
@@ -65,9 +64,23 @@ en:
     db_Status: Status
     db_TargetLocale: 'Target locale'
     has_one_Member: Member
+  Supertext\Silverstripe\Service\Messages:
+    AUTH_FAILED: 'Authentication failed. Please check the Supertext API key. No Supertext account yet? Create one at {signup}. Generate your API key at {apikey} (requires the Admin role).'
+    DELETED: 'The document was deleted at Supertext before it could be downloaded.'
+    EMPTY: 'The translated document was empty.'
+    HTTP_ERROR: 'Supertext answered with HTTP {status}.'
+    LIMIT_EXCEEDED: 'Your Supertext translation limit is exceeded. Please upgrade your subscription.'
+    NOT_FOUND: 'The requested Supertext resource was not found.'
+    NO_API_KEY: 'No Supertext API key is configured. Set the SUPERTEXT_API_KEY environment variable. No Supertext account yet? Create one at {signup}. Generate your API key at {apikey} (requires the Admin role).'
+    NO_FILE_ID: 'Supertext did not return a file id.'
+    RATE_LIMITED: 'Too many requests to Supertext. Please try again shortly.'
+    TIMEOUT: 'Timed out waiting for the Supertext translation.'
+    TOO_LARGE: 'The content is too large for Supertext to translate in one go.'
+    TRANSLATION_FAILED: 'Supertext could not translate the document.'
+    UNAVAILABLE: 'The Supertext service is currently unavailable.'
+    UNREACHABLE: 'Could not reach Supertext: {error}'
   Supertext\Silverstripe\Service\Translator:
     FORBIDDEN: 'You are not allowed to edit this page in {locale}.'
-    NO_KEY: 'No Supertext API key is configured. Set the SUPERTEXT_API_KEY environment variable.'
     NO_LOCALE: 'Unknown locale {locale}.'
     NO_SOURCE: 'This page has no content of its own in {locale} to translate from.'
     SKIPPED: 'Already translated.'
@@ -75,4 +88,3 @@ en:
     PERMISSION: 'Translate content with Supertext'
     PERMISSION_CATEGORY: Supertext
     PERMISSION_HELP: 'Send pages to Supertext and save the translations in other locales. Editing the page and the locales is still required.'
-    UNREACHABLE: 'The Supertext service could not be reached.'

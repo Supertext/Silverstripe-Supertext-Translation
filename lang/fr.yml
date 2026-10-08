@@ -1,0 +1,90 @@
+fr:
+  Supertext\Silverstripe\Control\SupertextAdmin:
+    API: API
+    API_KEY: 'Clé API'
+    CODE: 'Langue Supertext'
+    CONNECTED: 'Connecté. La clé API fonctionne.'
+    CONNECTION: Connexion
+    DEFAULT: 'Par défaut'
+    FORMAL: 'Formel (Sie, vous)'
+    INFORMAL: 'Informel (du, tu)'
+    KEY_HELP: 'Pas encore de compte Supertext ? <a href="{signup}" target="_blank" rel="noopener">Créez-en un sur supertext.com</a>. Générez votre clé API sur <a href="{apikey}" target="_blank" rel="noopener">supertext.com → Integrations → API</a> (rôle Admin requis).'
+    KEY_MISSING: 'Manquante : définissez la variable d''environnement SUPERTEXT_API_KEY'
+    KEY_SET: 'Définie (variable d''environnement SUPERTEXT_API_KEY)'
+    LOCALE: Langue
+    LOCALES: Langues
+    LOCALES_HELP: 'Les langues Fluent, avec la langue Supertext et la forme d''adresse utilisées pour les traduire. Modifiez-les sous <a href="{link}">Locales</a>.'
+    LOG: Traductions
+    MENUTITLE: Supertext
+    POLITENESS: 'Forme d''adresse'
+    TEST: 'Tester la connexion'
+    TESTING: 'Test en cours…'
+    TIMEOUT: 'Délai d''attente par langue'
+    VERSION: 'Version du module'
+  Supertext\Silverstripe\Extension\LocaleExtension:
+    CODE: 'Langue Supertext'
+    CODE_HELP: 'Code de langue envoyé à Supertext. Laissez vide pour utiliser {code}.'
+    DEFAULT: 'Par défaut'
+    FORMAL: 'Formel (Sie, vous)'
+    INFORMAL: 'Informel (du, tu)'
+    POLITENESS: 'Forme d''adresse'
+    POLITENESS_HELP: 'La façon dont Supertext s''adresse aux lecteurs dans cette langue.'
+    db_SupertextCode: 'Code Supertext'
+    db_SupertextPoliteness: 'Forme d''adresse Supertext'
+  Supertext\Silverstripe\Extension\SupertextCMSMainExtension:
+    DONE: 'Traduit en {locales} (enregistré comme brouillon).'
+    FAILED: 'Échec : {errors}'
+    NONE: 'Choisissez au moins une langue cible.'
+    SKIPPED: 'Déjà traduit, ignoré : {locales}.'
+  Supertext\Silverstripe\Extension\SupertextPageExtension:
+    BUSY: 'Traduction en cours…'
+    BUTTON: Traduire
+    EXISTS: 'Déjà traduit'
+    FROM: 'Depuis <strong>{locale}</strong>, la langue que vous modifiez.'
+    HINT: 'Supertext traduit le brouillon enregistré de cette langue : enregistrez d''abord vos modifications. Les traductions sont enregistrées comme brouillons ; relisez-les et publiez-les dans chaque langue.'
+    INTO: Vers
+    LAST: 'Traduit avec Supertext le {date}'
+    NOT_CONFIGURED: 'Supertext n''est pas encore configuré : un administrateur doit définir SUPERTEXT_API_KEY.'
+    NO_SOURCE: 'Cette page n''a pas encore de contenu propre en {locale}. Passez à une langue dans laquelle elle a été rédigée pour la traduire depuis celle-ci.'
+    OVERWRITE: 'Écraser les traductions existantes'
+    OVERWRITE_HELP: 'Les langues sélectionnées qui ont déjà leur propre contenu reçoivent une nouvelle traduction depuis {locale} : champs de la page et blocs de contenu. Les modifications faites dans ces langues sont perdues. Laissez cette option désactivée pour ne traduire que les langues manquantes.'
+    TAB: Supertext
+    TITLE: 'Traduire avec Supertext'
+  Supertext\Silverstripe\Model\TranslationLog:
+    PLURALNAME: 'Traductions Supertext'
+    PLURALS:
+      one: 'Une traduction Supertext'
+      other: '{count} traductions Supertext'
+    SINGULARNAME: 'Traduction Supertext'
+    db_Message: Message
+    db_RecordClass: 'Classe de l''enregistrement'
+    db_RecordID: 'ID de l''enregistrement'
+    db_RecordTitle: 'Titre de l''enregistrement'
+    db_SourceLocale: 'Langue source'
+    db_Status: Statut
+    db_TargetLocale: 'Langue cible'
+    has_one_Member: Membre
+  Supertext\Silverstripe\Service\Messages:
+    AUTH_FAILED: 'Échec de l''authentification. Veuillez vérifier la clé API Supertext. Pas encore de compte Supertext ? Créez-en un sur {signup}. Générez votre clé API sur {apikey} (rôle Admin requis).'
+    DELETED: 'Le document a été supprimé chez Supertext avant de pouvoir être téléchargé.'
+    EMPTY: 'Le document traduit était vide.'
+    HTTP_ERROR: 'Supertext a répondu avec le code HTTP {status}.'
+    LIMIT_EXCEEDED: 'Votre limite de traduction Supertext est atteinte. Veuillez passer à un abonnement supérieur.'
+    NOT_FOUND: 'La ressource Supertext demandée est introuvable.'
+    NO_API_KEY: 'Aucune clé API Supertext n''est configurée. Définissez la variable d''environnement SUPERTEXT_API_KEY. Pas encore de compte Supertext ? Créez-en un sur {signup}. Générez votre clé API sur {apikey} (rôle Admin requis).'
+    NO_FILE_ID: 'Supertext n''a pas renvoyé d''identifiant de fichier.'
+    RATE_LIMITED: 'Trop de requêtes envoyées à Supertext. Veuillez réessayer dans un instant.'
+    TIMEOUT: 'Délai dépassé en attendant la traduction Supertext.'
+    TOO_LARGE: 'Le contenu est trop volumineux pour être traduit par Supertext en une seule fois.'
+    TRANSLATION_FAILED: 'Supertext n''a pas pu traduire le document.'
+    UNAVAILABLE: 'Le service Supertext est actuellement indisponible.'
+    UNREACHABLE: 'Impossible de joindre Supertext : {error}'
+  Supertext\Silverstripe\Service\Translator:
+    FORBIDDEN: 'Vous n''êtes pas autorisé à modifier cette page en {locale}.'
+    NO_LOCALE: 'Langue inconnue {locale}.'
+    NO_SOURCE: 'Cette page n''a pas de contenu propre en {locale} à partir duquel traduire.'
+    SKIPPED: 'Déjà traduit.'
+  Supertext\Silverstripe\Supertext:
+    PERMISSION: 'Traduire le contenu avec Supertext'
+    PERMISSION_CATEGORY: Supertext
+    PERMISSION_HELP: 'Envoyer des pages à Supertext et enregistrer les traductions dans d''autres langues. Le droit de modifier la page et les langues reste nécessaire.'

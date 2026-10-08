@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- French and Italian interface, and German where it was missing: messages from Supertext (limit reached, authentication failed, timeouts and others) now appear in the user's interface language too. The "no API key" and "authentication failed" messages now also link to Supertext account sign-up.
 - The **Supertext** CMS section shows the installed plugin version under *Connection*, linked to its GitHub release notes for released versions.
 
 ## 0.1.0 — 2026-10-07

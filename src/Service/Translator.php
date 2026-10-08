@@ -99,10 +99,7 @@ class Translator
 
         $client = $this->client ?? Supertext::singleton()->client();
         if (!$client->hasApiKey()) {
-            throw new SupertextException(_t(
-                self::class . '.NO_KEY',
-                'No Supertext API key is configured. Set the SUPERTEXT_API_KEY environment variable.'
-            ));
+            throw new SupertextException(Messages::noApiKey());
         }
 
         $units = $this->inLocale($source, fn () => $this->collect($this->reload($record)));
@@ -163,7 +160,7 @@ class Translator
             $translations = $this->send($client, $units, $source, $targetLocale);
             $this->inLocale($target, fn () => $this->apply($record, $units, $translations, $exists));
         } catch (SupertextException $e) {
-            return ['status' => TranslationLog::ERROR, 'message' => $e->getMessage()] + $result;
+            return ['status' => TranslationLog::ERROR, 'message' => Messages::of($e)] + $result;
         } catch (\Throwable $e) {
             \SilverStripe\Core\Injector\Injector::inst()->get(\Psr\Log\LoggerInterface::class)
                 ->error('Supertext translation failed: ' . $e->getMessage(), ['exception' => $e]);

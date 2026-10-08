@@ -131,6 +131,10 @@ DNADesign\Elemental\Models\BaseElement:
 
 The module follows the objects a page *owns* (Silverstripe's `owns`), so blocks, nested blocks and other owned, localised objects are translated with the page. The *indirect* setup (a separate block area per locale) is not supported yet.
 
+## Interface languages
+
+The module's tab, CMS section, permission and messages are available in English, German, French and Italian. They follow each CMS user's interface language: *Profile* (your name at the top of the CMS menu) → *Interface Language*. Other languages show the English texts.
+
 ## Request timeouts
 
 Translating runs in the editor's request: a few seconds per locale, up to `timeout` for very long pages. Make sure your web server and proxy allow that (PHP `max_execution_time` and the proxy timeout of at least a few minutes).

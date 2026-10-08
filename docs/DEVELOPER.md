@@ -37,7 +37,8 @@ apply(): in the target locale (draft): set the fields on each owned object and t
 | `src/Model/TranslationLog.php` | Table `SupertextTranslation`: one row per record and target locale and run |
 | `src/Task/` | `sake tasks:supertext-translate --page=<id> --from=en_US [--to=de_CH,fr_CH] [--overwrite] [--member=<email>]`, `sake tasks:supertext-check` |
 | `client/` | Tab script (overwrite option, busy state, submitting buttons outside the toolbar) and styles, exposed to `_resources` |
-| `lang/` | English and German strings (`en.yml` from `sake tasks:i18nTextCollectorTask --module=supertext/silverstripe-supertext-translation`) |
+| `lang/` | English, German, French and Italian strings (`en.yml` from `sake tasks:i18nTextCollectorTask --module=supertext/silverstripe-supertext-translation`; `de.yml`, `fr.yml`, `it.yml` by hand) |
+| `src/Service/Messages.php` | Shows a `SupertextException` from the API client in the user's language (by its `reason`), falling back to the client's English message |
 
 The CMS only submits forms through buttons in the bottom toolbar (`LeftAndMain.EditForm.js`); `client/supertext.js` triggers the submit for the tab's *Translate* and the admin's *Test connection* button the same way.
 
@@ -104,6 +105,7 @@ vendor/bin/phpunit
 
 - `tests/unit/SupertextClientTest.php`: the API protocol, auth header and prefix, 429 retries, errors, clean-up.
 - `tests/unit/HtmlDocumentTest.php`, `tests/unit/ChunksTest.php`: document packing and parsing, whitespace, splitting below the size limit.
+- `tests/unit/LangFilesTest.php`: `de.yml`, `fr.yml` and `it.yml` have every string of `en.yml` with the same placeholders, tags and URLs, and `en.yml` has every `_t(self::class . '.KEY')` used in `src/`.
 - `tests/demo-check.sh` (CI): the demo image on MySQL with the stand-in, started twice: demo accounts created once and never duplicated, no passwords in the log, the Editors group and its permissions, the locales, `supertext-check`, translation of the sample page as the editor into three locales (page fields, ASCII URL segments, block titles and HTML with markup), the skip on a second run, and the log.
 
 CI (`.github/workflows/ci.yml`) on every push and pull request: **test** (PHP lint, PHPUnit) and **demo** (builds `demo/Dockerfile`, runs `tests/demo-check.sh`).
@@ -176,7 +178,7 @@ The script shows the live API address instead of the stand-in's and the public d
 
 Releases are published by `.github/workflows/release.yml` when the version is officially bumped; nobody tags or creates releases by hand.
 
-1. Check that if strings changed, `lang/en.yml` is regenerated with the text collector and `lang/de.yml` matches.
+1. Check that if strings changed, `lang/en.yml` is regenerated with the text collector and `lang/de.yml`, `fr.yml` and `it.yml` match.
 2. Move the *Unreleased* entries in `CHANGELOG.md` under a new `## X.Y.Z — YYYY-MM-DD` section, and keep an empty *Unreleased* above it.
 3. There is no version field to change: Composer takes the version from the Git tag the workflow creates.
 4. Push to `main`. The workflow tags `vX.Y.Z` and creates the GitHub release with the CHANGELOG section as notes (0.x versions as pre-releases). A push that adds no new version does nothing, and a version that is already released is skipped. After fixing a failed run, start it again with *Run workflow* on the *Release* workflow.
@@ -185,7 +187,8 @@ Submitting the package to Packagist is planned.
 ## Conventions
 
 - PSR-12, PHP 8.3, typed properties; keep `src/Api/` free of Silverstripe classes.
-- User-visible strings through `_t()` with English and German in `lang/`.
+- User-visible strings through `_t()` with English, German, French and Italian in `lang/`; new or changed strings need all four in the same commit. Formal address (Sie, vous, Lei) and the CMS's own terms (*Seite/Entwurf*, *page/brouillon*, *pagina/bozza*).
+- The API client (`src/Api/`, no Silverstripe classes) throws `SupertextException` with an English message and a `reason` (e.g. `limit_exceeded`); `Service\Messages::of()` maps it to a `_t()` string. A new reason needs a `match` arm there and its strings in all four files.
 - Keep the three docs in `docs/` current with every change (see `CLAUDE.md`).
 
 ## Known limitations / roadmap

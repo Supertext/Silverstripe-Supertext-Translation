@@ -11,6 +11,7 @@ use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use Supertext\Silverstripe\Api\SupertextException;
 use Supertext\Silverstripe\Model\TranslationLog;
+use Supertext\Silverstripe\Service\Messages;
 use Supertext\Silverstripe\Service\Translator;
 use Supertext\Silverstripe\Supertext;
 use TractorCow\Fluent\Model\Locale;
@@ -49,7 +50,7 @@ class SupertextCMSMainExtension extends Extension
                 Security::getCurrentUser()
             );
         } catch (SupertextException $e) {
-            return $this->complete($e->getMessage(), 400);
+            return $this->complete(Messages::of($e), 400);
         }
 
         $names = [];

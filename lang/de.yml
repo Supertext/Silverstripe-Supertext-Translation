@@ -16,7 +16,6 @@ de:
     LOCALES_HELP: 'Die Fluent-Sprachen mit der Supertext-Sprache und der Anrede, mit der übersetzt wird. Ändern lässt sich das unter <a href="{link}">Locales</a>.'
     LOG: Übersetzungen
     MENUTITLE: Supertext
-    NO_KEY: 'Kein API-Schlüssel: Umgebungsvariable SUPERTEXT_API_KEY setzen.'
     POLITENESS: Anrede
     TEST: 'Verbindung testen'
     TESTING: 'Wird getestet …'
@@ -65,9 +64,23 @@ de:
     db_Status: Status
     db_TargetLocale: Zielsprache
     has_one_Member: Mitglied
+  Supertext\Silverstripe\Service\Messages:
+    AUTH_FAILED: 'Authentifizierung fehlgeschlagen. Bitte prüfen Sie den Supertext-API-Schlüssel. Noch kein Supertext-Konto? Erstellen Sie eines unter {signup}. Den API-Schlüssel erzeugen Sie unter {apikey} (erfordert die Admin-Rolle).'
+    DELETED: 'Das Dokument wurde bei Supertext gelöscht, bevor es heruntergeladen werden konnte.'
+    EMPTY: 'Das übersetzte Dokument war leer.'
+    HTTP_ERROR: 'Supertext hat mit HTTP {status} geantwortet.'
+    LIMIT_EXCEEDED: 'Ihr Supertext-Übersetzungslimit ist erreicht. Bitte erweitern Sie Ihr Abonnement.'
+    NOT_FOUND: 'Die angeforderte Supertext-Ressource wurde nicht gefunden.'
+    NO_API_KEY: 'Es ist kein Supertext-API-Schlüssel eingerichtet. Setzen Sie die Umgebungsvariable SUPERTEXT_API_KEY. Noch kein Supertext-Konto? Erstellen Sie eines unter {signup}. Den API-Schlüssel erzeugen Sie unter {apikey} (erfordert die Admin-Rolle).'
+    NO_FILE_ID: 'Supertext hat keine Datei-ID zurückgegeben.'
+    RATE_LIMITED: 'Zu viele Anfragen an Supertext. Bitte versuchen Sie es gleich noch einmal.'
+    TIMEOUT: 'Zeitüberschreitung beim Warten auf die Supertext-Übersetzung.'
+    TOO_LARGE: 'Der Inhalt ist zu groß, um ihn bei Supertext in einem Schritt zu übersetzen.'
+    TRANSLATION_FAILED: 'Supertext konnte das Dokument nicht übersetzen.'
+    UNAVAILABLE: 'Der Supertext-Dienst ist zurzeit nicht verfügbar.'
+    UNREACHABLE: 'Supertext ist nicht erreichbar: {error}'
   Supertext\Silverstripe\Service\Translator:
     FORBIDDEN: 'Sie dürfen diese Seite in {locale} nicht bearbeiten.'
-    NO_KEY: 'Es ist kein Supertext-API-Schlüssel eingerichtet. Setzen Sie die Umgebungsvariable SUPERTEXT_API_KEY.'
     NO_LOCALE: 'Unbekannte Sprache {locale}.'
     NO_SOURCE: 'Diese Seite hat in {locale} keinen eigenen Inhalt, aus dem übersetzt werden kann.'
     SKIPPED: 'Bereits übersetzt.'
@@ -75,4 +88,3 @@ de:
     PERMISSION: 'Inhalte mit Supertext übersetzen'
     PERMISSION_CATEGORY: Supertext
     PERMISSION_HELP: 'Seiten an Supertext senden und die Übersetzungen in anderen Sprachen speichern. Die Berechtigung, die Seite und die Sprachen zu bearbeiten, ist weiterhin nötig.'
-    UNREACHABLE: 'Der Supertext-Dienst ist nicht erreichbar.'

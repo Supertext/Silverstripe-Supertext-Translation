@@ -16,6 +16,7 @@ use SilverStripe\View\Requirements;
 use Supertext\Silverstripe\Api\SupertextException;
 use Supertext\Silverstripe\Model\TranslationLog;
 use Supertext\Silverstripe\PluginVersion;
+use Supertext\Silverstripe\Service\Messages;
 use Supertext\Silverstripe\Supertext;
 use TractorCow\Fluent\Control\LocaleAdmin;
 use TractorCow\Fluent\Model\Locale;
@@ -81,13 +82,13 @@ class SupertextAdmin extends ModelAdmin
         $settings = Supertext::singleton();
         try {
             if ($settings->apiKey() === '') {
-                throw new SupertextException(_t(self::class . '.NO_KEY', 'No API key: set the SUPERTEXT_API_KEY environment variable.'));
+                throw new SupertextException(Messages::noApiKey());
             }
             $settings->client()->validateApiKey();
             $message = _t(self::class . '.CONNECTED', 'Connected. The API key works.');
             $status = 200;
         } catch (SupertextException $e) {
-            $message = $e->getMessage();
+            $message = Messages::of($e);
             $status = 400;
         }
 

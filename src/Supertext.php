@@ -3,13 +3,11 @@
 namespace Supertext\Silverstripe;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Security\PermissionProvider;
 use Supertext\Silverstripe\Api\SupertextClient;
-use Supertext\Silverstripe\Api\SupertextException;
 use TractorCow\Fluent\Model\Locale;
 
 /**
@@ -81,13 +79,8 @@ class Supertext implements PermissionProvider
     {
         $http = new Client(['http_errors' => false, 'timeout' => 60, 'connect_timeout' => 15]);
         $transport = static function (string $method, string $url, array $headers, ?string $body) use ($http): array {
-            try {
-                $response = $http->request($method, $url, ['headers' => $headers, 'body' => $body]);
-            } catch (GuzzleException $e) {
-                throw new SupertextException(
-                    _t(self::class . '.UNREACHABLE', 'The Supertext service could not be reached.') . ' ' . $e->getMessage()
-                );
-            }
+            // A GuzzleException (no connection) becomes the client's "Could not reach Supertext" error.
+            $response = $http->request($method, $url, ['headers' => $headers, 'body' => $body]);
             $out = [];
             foreach ($response->getHeaders() as $name => $values) {
                 $out[strtolower($name)] = implode(', ', $values);
