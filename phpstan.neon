@@ -1,0 +1,12 @@
+# PHPStan: static analysis of the module's own code (src/) against Silverstripe 6 and Fluent.
+# cambis/silverstan (require-dev) teaches PHPStan about Silverstripe's config,
+# extensions and injector. See docs/DEVELOPER.md → Code quality and security checks.
+includes:
+    - vendor/cambis/silverstan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - src
+    tmpDir: .phpstan-cache
