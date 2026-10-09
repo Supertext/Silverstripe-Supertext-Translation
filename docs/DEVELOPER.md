@@ -108,7 +108,7 @@ vendor/bin/phpunit
 - `tests/unit/LangFilesTest.php`: `de.yml`, `fr.yml` and `it.yml` have every string of `en.yml` with the same placeholders, tags and URLs, and `en.yml` has every `_t(self::class . '.KEY')` used in `src/`.
 - `tests/demo-check.sh` (CI): the demo image on MySQL with the stand-in, started twice: demo accounts created once and never duplicated, no passwords in the log, the Editors group and its permissions, the locales, `supertext-check`, translation of the sample page as the editor into three locales (page fields, ASCII URL segments, block titles and HTML with markup), the skip on a second run, and the log.
 
-CI (`.github/workflows/ci.yml`) on every push and pull request: **test** (PHP lint, PHPUnit) and **demo** (builds `demo/Dockerfile`, runs `tests/demo-check.sh`).
+CI (`.github/workflows/ci.yml`) on every push and pull request: **test** (PHP lint, PHPUnit), **phpstan** (see *Code quality and security checks*) and **demo** (builds `demo/Dockerfile`, runs `tests/demo-check.sh`).
 
 ## Demo (Railway)
 
@@ -173,6 +173,15 @@ BASE_URL=http://127.0.0.1:8096 DEMO_ADMIN_EMAIL=… DEMO_ADMIN_PASSWORD=… \
 ```
 
 The script shows the live API address instead of the stand-in's and the public demo's address (`SITE_URL`) instead of the local one.
+
+## Code quality and security checks
+
+- **Checks** (`.github/workflows/checks.yml`): on every push and pull request, [actionlint](https://github.com/rhysd/actionlint) and [zizmor](https://docs.zizmor.sh) lint the workflows. On pull requests, dependency review fails a PR that adds a package with a known vulnerability (moderate or worse). Third-party actions are pinned to commit SHAs (Dependabot keeps them current); checkouts don't keep credentials, and workflows get `contents: read` unless a job needs more (the release job: `contents: write`).
+- **Links** (`.github/workflows/links.yml`): [lychee](https://lychee.cli.rs) checks the links in all Markdown files weekly and whenever docs change on `main`. Broken links open or update the issue "Broken links in the docs" (a docs push that breaks links also fails). Links that can't work from CI go in `.lycheeignore` (one regex per line).
+- **PHPStan** (job `phpstan` in `ci.yml`, config `phpstan.neon`): level 5 on the module's own code (`src/`), not the tests or `demo/`. [cambis/silverstan](https://github.com/cambis/silverstan) (a dev dependency) tells PHPStan about Silverstripe's configuration properties, extensions and injector. Locally: `composer install`, then `vendor/bin/phpstan analyse`. Existing findings that aren't simple to fix are listed in `phpstan-baseline.neon` (mostly Fluent's extension methods such as `existsInLocale()`, which Silverstripe adds at runtime; regenerate with `vendor/bin/phpstan analyse --generate-baseline` after fixing one). New code must not add findings.
+- **GitHub settings** (set by Remy's setup script, not in the repo): secret scanning with push protection (a push containing a known token format is rejected; findings under *Security → Secret scanning*) and CodeQL default setup (findings under *Security → Code scanning* and as PR comments). CodeQL doesn't cover PHP, which is why this repo runs PHPStan.
+
+Before starting work in this repo, look at its open findings: code scanning alerts, secret scanning alerts, Dependabot PRs and the "Broken links in the docs" issue.
 
 ## Releasing
 

@@ -11,3 +11,4 @@
 /.phpunit.cache
 .env
 /.phpunit.result.cache
+/.phpstan-cache/

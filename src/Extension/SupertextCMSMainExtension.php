@@ -7,6 +7,7 @@ use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Core\Extension;
 use SilverStripe\Forms\Form;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use Supertext\Silverstripe\Api\SupertextException;
@@ -32,7 +33,7 @@ class SupertextCMSMainExtension extends Extension
         }
         $record = $form->getRecord();
         $source = Locale::getCurrentLocale();
-        if (!$record || !$record->isInDB() || !$source || !$record->canEdit()) {
+        if (!$record instanceof DataObject || !$record->isInDB() || !$source || !$record->canEdit()) {
             throw new HTTPResponse_Exception('Action not allowed', 403);
         }
 

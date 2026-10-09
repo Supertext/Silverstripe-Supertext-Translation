@@ -1,0 +1,31 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to an undefined method SilverStripe\\ORM\\DataObject&SilverStripe\\Versioned\\Versioned\:\:isDraftedInLocale\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Translator.php
+
+		-
+			message: '#^Call to an undefined method SilverStripe\\ORM\\DataObject\:\:existsInLocale\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Translator.php
+
+		-
+			message: '#^Call to an undefined method SilverStripe\\ORM\\DataObject\:\:getLocalisedTables\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Translator.php
+
+		-
+			message: '#^Instanceof between SilverStripe\\ORM\\DataObject&SilverStripe\\ORM\\DataObject and SilverStripe\\ORM\\DataObject will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Service/Translator.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type TractorCow\\Fluent\\Model\\Locale\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Task/TranslateTask.php

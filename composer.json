@@ -26,6 +26,8 @@
         "guzzlehttp/guzzle": "^7.9"
     },
     "require-dev": {
+        "cambis/silverstan": "^2.2",
+        "phpstan/phpstan": "^2.2.1",
         "phpunit/phpunit": "^11.5"
     },
     "autoload": {
@@ -48,6 +50,8 @@
             "/docs",
             "/.github",
             "/phpunit.xml.dist",
+            "/phpstan.neon",
+            "/phpstan-baseline.neon",
             "/CLAUDE.md"
         ]
     },
