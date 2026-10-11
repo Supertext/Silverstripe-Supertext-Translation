@@ -6,6 +6,7 @@ use SilverStripe\Core\Extension;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
+use Supertext\Silverstripe\Api\LanguageCodes;
 use TractorCow\Fluent\Model\Locale;
 
 /**
@@ -23,7 +24,7 @@ class LocaleExtension extends Extension
     protected function updateCMSFields(FieldList $fields): void
     {
         $fields->removeByName(['SupertextCode', 'SupertextPoliteness']);
-        $code = str_replace('_', '-', (string) $this->owner->Locale);
+        $code = LanguageCodes::target((string) $this->owner->Locale);
         $fields->addFieldsToTab('Root.Main', [
             TextField::create('SupertextCode', _t(self::class . '.CODE', 'Supertext language'))
                 ->setAttribute('placeholder', $code)

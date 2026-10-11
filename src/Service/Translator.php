@@ -251,13 +251,13 @@ class Translator
             $segments[$i] = ['text' => $unit['value'], 'html' => $unit['html']];
         }
 
-        $sourceCode = Supertext::languageCode($source);
+        $sourceCode = Supertext::sourceCode($source);
         $translations = [];
         foreach (HtmlDocument::chunks($segments) as $chunk) {
             $html = $client->translateDocument(
                 HtmlDocument::build($chunk),
                 Supertext::languageCode($target),
-                strtolower(explode('-', $sourceCode)[0]),
+                $sourceCode,
                 Supertext::politeness($target) ?: 'default'
             );
             $isHtml = array_map(static fn (array $s) => $s['html'], $chunk);

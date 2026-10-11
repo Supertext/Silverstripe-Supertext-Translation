@@ -7,6 +7,7 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Security\PermissionProvider;
+use Supertext\Silverstripe\Api\LanguageCodes;
 use Supertext\Silverstripe\Api\SupertextClient;
 use TractorCow\Fluent\Model\Locale;
 
@@ -59,12 +60,16 @@ class Supertext implements PermissionProvider
         return max(10, (int) static::config()->get('timeout'));
     }
 
-    /** Supertext language for a Fluent locale: the locale's override, else BCP-47 (de_CH -> de-CH). */
+    /** Supertext target code for a Fluent locale: the locale's override, else BCP-47 with a region (de_CH -> de-CH, de -> de-DE). */
     public static function languageCode(Locale $locale): string
     {
-        $override = trim((string) $locale->getField('SupertextCode'));
+        return LanguageCodes::target((string) $locale->Locale, (string) $locale->getField('SupertextCode'));
+    }
 
-        return $override !== '' ? $override : str_replace('_', '-', (string) $locale->Locale);
+    /** Supertext source code for a Fluent locale: the bare language of the override or the locale (en_GB -> en). */
+    public static function sourceCode(Locale $locale): string
+    {
+        return LanguageCodes::source((string) $locale->Locale, (string) $locale->getField('SupertextCode'));
     }
 
     /** "more" (formal), "less" (informal) or "" (default). */

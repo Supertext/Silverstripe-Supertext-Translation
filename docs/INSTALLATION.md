@@ -66,13 +66,13 @@ Check it under **Supertext → Test connection** (administrators) or with `vendo
 
 ## Locales
 
-The module translates between your Fluent locales (**Locales** in the CMS menu). Each locale is sent to Supertext in BCP-47 form (`de_CH` → `de-CH`). Use regional locales where they matter: `de_CH` writes "ss" instead of "ß".
+The module translates between your Fluent locales (**Locales** in the CMS menu). Each target locale is sent to Supertext in BCP-47 form with a region (`de_CH` → `de-CH`); a locale without a region gets the usual one (`de` → `de-DE`, `fr` → `fr-FR`, `en` → `en-US`, `it` → `it-IT`, …). The source locale is sent without region (`en_US` → `en`). A locale's *Supertext language* wins over its code. Use regional locales where they matter: `de_CH` writes "ss" instead of "ß".
 
 ![The Locales section: English (en_US, default), Deutsch (de_CH), Français (fr_CH) and Italiano (it_CH) with their URL segments](images/07-locales.png)
 
 Open a locale to set its two Supertext fields:
 
-- **Supertext language**: a different code to send to Supertext (e.g. `fr-CH` for a locale `fr_FR` used for Swiss readers). Empty means the locale's own code.
+- **Supertext language**: a different code to send to Supertext (e.g. `fr-CH` for a locale `fr_FR` used for Swiss readers). Empty means the locale's own code (with the usual region if it has none).
 - **Form of address**: *Formal (Sie, vous)*, *Informal (du, tu)* or *Default*.
 
 ![The two Supertext fields of the locale Deutsch: Supertext language (empty, uses de-CH) and Form of address (Formal)](images/08-locale-settings.png)
