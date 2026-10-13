@@ -33,6 +33,7 @@ final class Messages
             'no_api_key' => self::noApiKey(),
             'unreachable' => _t(self::class . '.UNREACHABLE', 'Could not reach Supertext: {error}', ['error' => (string) ($e->args[0] ?? '')]),
             'auth_failed' => _t(self::class . '.AUTH_FAILED', 'Authentication failed. Please check the Supertext API key. No Supertext account yet? Create one at {signup}. Generate your API key at {apikey} (requires the Admin role).', $links),
+            'invalid_language_pair' => _t(self::class . '.INVALID_LANGUAGE_PAIR', 'Supertext does not support this language pair ({source} → {target}). Check the Supertext code of the locale.', ['source' => (string) ($e->args[0] ?? ''), 'target' => (string) ($e->args[1] ?? '')]),
             'not_found' => _t(self::class . '.NOT_FOUND', 'The requested Supertext resource was not found.'),
             'too_large' => _t(self::class . '.TOO_LARGE', 'The content is too large for Supertext to translate in one go.'),
             'rate_limited' => _t(self::class . '.RATE_LIMITED', 'Too many requests to Supertext. Please try again shortly.'),

@@ -70,6 +70,7 @@ en:
     EMPTY: 'The translated document was empty.'
     HTTP_ERROR: 'Supertext answered with HTTP {status}.'
     LIMIT_EXCEEDED: 'Your Supertext translation limit is exceeded. Please upgrade your subscription.'
+    INVALID_LANGUAGE_PAIR: 'Supertext does not support this language pair ({source} → {target}). Check the Supertext code of the locale.'
     NOT_FOUND: 'The requested Supertext resource was not found.'
     NO_API_KEY: 'No Supertext API key is configured. Set the SUPERTEXT_API_KEY environment variable. No Supertext account yet? Create one at {signup}. Generate your API key at {apikey} (requires the Admin role).'
     NO_FILE_ID: 'Supertext did not return a file id.'

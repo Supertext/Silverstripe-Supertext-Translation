@@ -70,6 +70,7 @@ fr:
     EMPTY: 'Le document traduit était vide.'
     HTTP_ERROR: 'Supertext a répondu avec le code HTTP {status}.'
     LIMIT_EXCEEDED: 'Votre limite de traduction Supertext est atteinte. Veuillez passer à un abonnement supérieur.'
+    INVALID_LANGUAGE_PAIR: 'Supertext ne prend pas en charge cette paire de langues ({source} → {target}). Vérifiez le code Supertext de la langue.'
     NOT_FOUND: 'La ressource Supertext demandée est introuvable.'
     NO_API_KEY: 'Aucune clé API Supertext n''est configurée. Définissez la variable d''environnement SUPERTEXT_API_KEY. Pas encore de compte Supertext ? Créez-en un sur {signup}. Générez votre clé API sur {apikey} (rôle Admin requis).'
     NO_FILE_ID: 'Supertext n''a pas renvoyé d''identifiant de fichier.'

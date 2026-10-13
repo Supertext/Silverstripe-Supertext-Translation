@@ -5,4 +5,4 @@ set -e
 cd "$(dirname "$0")/.."
 rm -rf demo/module
 mkdir -p demo/module
-cp -R composer.json _config client lang src templates demo/module/
+cp -R composer.json _config client lang lib src templates demo/module/

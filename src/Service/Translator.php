@@ -11,7 +11,6 @@ use SilverStripe\ORM\FieldType\DBHTMLVarchar;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
-use Supertext\Silverstripe\Api\HtmlDocument;
 use Supertext\Silverstripe\Api\SupertextClient;
 use Supertext\Silverstripe\Api\SupertextException;
 use Supertext\Silverstripe\Model\TranslationLog;
@@ -251,20 +250,12 @@ class Translator
             $segments[$i] = ['text' => $unit['value'], 'html' => $unit['html']];
         }
 
-        $sourceCode = Supertext::sourceCode($source);
-        $translations = [];
-        foreach (HtmlDocument::chunks($segments) as $chunk) {
-            $html = $client->translateDocument(
-                HtmlDocument::build($chunk),
-                Supertext::languageCode($target),
-                $sourceCode,
-                Supertext::politeness($target) ?: 'default'
-            );
-            $isHtml = array_map(static fn (array $s) => $s['html'], $chunk);
-            $translations += HtmlDocument::parse($html, $isHtml);
-        }
-
-        return $translations;
+        return $client->translateSegments(
+            $segments,
+            Supertext::languageCode($target),
+            Supertext::sourceCode($source),
+            Supertext::politeness($target) ?: 'default'
+        );
     }
 
     /** Writes the translations to the draft stage of the current (target) locale. */

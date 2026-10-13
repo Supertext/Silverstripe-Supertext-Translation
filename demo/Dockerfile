@@ -18,6 +18,7 @@ COPY composer.json /app/demo/module/
 COPY _config /app/demo/module/_config
 COPY client /app/demo/module/client
 COPY lang /app/demo/module/lang
+COPY lib /app/demo/module/lib
 COPY src /app/demo/module/src
 COPY templates /app/demo/module/templates
 COPY demo/project /app/demo/project

@@ -33,6 +33,7 @@
     "autoload": {
         "psr-4": {
             "Supertext\\Silverstripe\\": "src/",
+            "Supertext\\Silverstripe\\Sdk\\": "lib/supertext-sdk/src/",
             "Supertext\\Silverstripe\\Tests\\": "tests/"
         }
     },

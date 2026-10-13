@@ -148,6 +148,7 @@ Translating runs in the editor's request: a few seconds per locale, up to `timeo
 | *This page has no content of its own in … yet* | The page was never saved in the locale you're in. Switch to the locale it was written in. |
 | *You are not allowed to edit this page in …* | Page permissions, or Fluent locale permissions that don't include that locale. |
 | *Authentication failed. Please check the Supertext API key.* | Wrong or revoked key, or a key for another environment. Use *Test connection*; generate a new key at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api) (Admin role). |
+| *Supertext does not support this language pair (en → xx-YY)* | The locale (or its *Supertext code*) isn't a language Supertext offers. Set the locale's *Supertext code* to a code such as `de-CH` or `fr`; the message shows the codes that were sent. |
 | *Too many requests to Supertext* | The API's per-second limit was hit repeatedly although the module retries. Try again shortly. |
 | *Timed out waiting for the Supertext translation* or a 502/504 | Very long page: raise `timeout`, PHP's `max_execution_time` and the proxy timeout. |
 | Blocks stay in the source language | Blocks aren't localised by Fluent (see [Elemental blocks](#elemental-blocks)). |

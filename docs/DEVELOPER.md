@@ -16,9 +16,10 @@ Service\Translator::translate(record, source, targets, overwrite, member)
    │ collect(): in the source locale (draft), the record's localised text fields + those of the
    │            localised objects it owns (findOwned, e.g. Elemental blocks), recursively
    │ per target: skip if it exists (unless overwrite); check SUPERTEXT_TRANSLATE and canEdit inside the target locale
-   │ Api\HtmlDocument::build(): one <div data-st-id="N"> per value; chunks below 900k characters
    ▼
-Api\SupertextClient   POST file → poll status → GET translation → DELETE   (Guzzle transport)
+Api\SupertextClient::translateSegments()   the bundled Supertext SDK: one <div data-st-id="N"> per value,
+   │   documents below 900k characters, POST file → poll status → GET translation → DELETE
+   │   (Guzzle through Api\CallableTransport)
    ▼
 apply(): in the target locale (draft): set the fields on each owned object and the record, writeToStage(DRAFT);
          new locale → URLSegment from the translated title; Model\TranslationLog rows
@@ -26,7 +27,8 @@ apply(): in the target locale (draft): set the fields on each owned object and t
 
 | Path | Responsibility |
 | --- | --- |
-| `src/Api/` | Supertext API client, HTML document, chunks. No Silverstripe classes (HTTP through a transport callable), unit-tested on their own |
+| `src/Api/` | Wrapper around the Supertext SDK (`SupertextClient`, `CallableTransport`), language codes, exception. No Silverstripe classes (HTTP through a transport callable), unit-tested on their own |
+| `lib/supertext-sdk/` | Bundled copy of the Supertext PHP SDK, namespace `Supertext\Silverstripe\Sdk` (see *Supertext SDK*) |
 | `src/Supertext.php` | Settings (YAML + `SUPERTEXT_API_KEY` / `SUPERTEXT_API_URL`), language code and tone per locale, the Guzzle client, the permission `SUPERTEXT_TRANSLATE` |
 | `src/Service/Translator.php` | Field rules, collecting, translating, saving |
 | `src/Extension/SupertextPageExtension.php` | The Supertext tab (fields are not saved into the record: `saveSupertext*()` no-ops) |
@@ -68,11 +70,21 @@ Auth header: `Authorization: Supertext-Auth-Key <key>`. The header name must be 
 
 **Rate limit:** the API limits requests per second per key (HTTP 429). The client retries a 429 up to 4 times, waiting for `Retry-After` if sent, otherwise 1, 2, 4 and 8 seconds plus jitter. Target locales are translated one after the other.
 
+## Supertext SDK
+
+The protocol above, the retries, the language codes and the `data-st-id` document come from the official Supertext PHP SDK ([Supertext/Supertext-API-SDK-and-Guide](https://github.com/Supertext/Supertext-API-SDK-and-Guide)). The module ships a copy in `lib/supertext-sdk/` with its namespace changed from `Supertext\Sdk` to `Supertext\Silverstripe\Sdk` (Composer autoloads it from the module's `composer.json`; `tests/bootstrap.php` too), so sites install nothing extra and another package that requires the SDK itself can't clash with it. `lib/supertext-sdk/COMMIT` names the SDK revision.
+
+- Never edit `lib/supertext-sdk/`. Fix the SDK in its repository, then run `scripts/vendor-sdk.sh [ref]` (default `main`; `SDK_DIR=/path/to/clone` uses a local clone) and the tests.
+- `src/Api/SupertextClient.php` keeps the module's interface (`translateDocument`, `translateSegments`, `validateApiKey`, transport callable) and turns every SDK error code into a `SupertextException` reason (`REASONS`); `Service\Messages::of()` translates it. A new SDK error code needs a reason there, a `match` arm in `Messages` and its strings in all four `lang/` files.
+- PHPStan analyses `src/` only; the SDK has its own checks in its repository.
+- Segments missing from Supertext's answer are left untouched in the target locale.
+- The live API answers an unknown language (`xx-YY`) with HTTP 404 `INVALID_LANGUAGE_PAIR`; the SDK reports it as `invalid_language_pair` with both codes, shown as "Supertext does not support this language pair (en → xx-YY)".
+
 ## Language codes
 
 Supertext wants the **source as a bare language** (`en`, `de`, `fr`) and the **target as a regional code** (`de-DE`, `fr-CH`, `en-US`). A bare target such as `de`, or a regional source such as `en-US`, is rejected with `INVALID_LANGUAGE_PAIR`. Translating within one language (`en` → `en-GB`) is allowed.
 
-`src/Api/LanguageCodes.php` (no CMS dependency, `tests/unit/LanguageCodesTest.php`) turns locales into the codes sent:
+`src/Api/LanguageCodes.php` (the SDK's `LanguageCodes` plus the locale's Supertext code; no CMS dependency, `tests/unit/LanguageCodesTest.php`) turns locales into the codes sent:
 
 - **Source:** the bare language of the source locale's *Supertext language*, else of the locale (`en_US` → `en`).
 - **Target:** the target locale's *Supertext language* if set (normalized: `de_ch` → `de-CH`), else the Fluent locale. Either way, a code with a region keeps it, normalized (`de_CH`/`de-ch` → `de-CH`; scripts and numeric regions such as `zh-Hant`, `es-419` keep their form); a bare language gets its default region: ar→ar-SA, bg→bg-BG, cs→cs-CZ, da→da-DK, de→de-DE, el→el-GR, en→en-US, es→es-ES, et→et-EE, fi→fi-FI, fr→fr-FR, hr→hr-HR, hu→hu-HU, it→it-IT, ja→ja-JP, ko→ko-KR, lt→lt-LT, lv→lv-LV, nb→nb-NO, nl→nl-NL, pl→pl-PL, pt→pt-PT, ro→ro-RO, ru→ru-RU, sk→sk-SK, sl→sl-SI, sr→sr-RS, sv→sv-SE, th→th-TH, tr→tr-TR, uk→uk-UA, vi→vi-VN, zh→zh-CN (same table as the other Supertext plugins). Unknown bare codes are sent unchanged, so Supertext's error names them.
@@ -115,8 +127,7 @@ composer install
 vendor/bin/phpunit
 ```
 
-- `tests/unit/SupertextClientTest.php`: the API protocol, auth header and prefix, 429 retries, errors, clean-up.
-- `tests/unit/HtmlDocumentTest.php`, `tests/unit/ChunksTest.php`: document packing and parsing, whitespace, splitting below the size limit.
+- `tests/unit/SupertextClientTest.php`: the SDK wrapper: protocol, auth header and prefix, 429 retries, error reasons (language pair included), clean-up, segments (plain text, HTML, blank, missing) and splitting into several documents.
 - `tests/unit/LangFilesTest.php`: `de.yml`, `fr.yml` and `it.yml` have every string of `en.yml` with the same placeholders, tags and URLs, and `en.yml` has every `_t(self::class . '.KEY')` used in `src/`.
 - `tests/demo-check.sh` (CI): the demo image on MySQL with the stand-in, started twice: demo accounts created once and never duplicated, no passwords in the log, the Editors group and its permissions, the locales, `supertext-check`, translation of the sample page as the editor into three locales (page fields, ASCII URL segments, block titles and HTML with markup), the skip on a second run, and the log.
 
@@ -209,7 +220,7 @@ Submitting the package to Packagist is planned.
 
 - PSR-12, PHP 8.3, typed properties; keep `src/Api/` free of Silverstripe classes.
 - User-visible strings through `_t()` with English, German, French and Italian in `lang/`; new or changed strings need all four in the same commit. Formal address (Sie, vous, Lei) and the CMS's own terms (*Seite/Entwurf*, *page/brouillon*, *pagina/bozza*).
-- The API client (`src/Api/`, no Silverstripe classes) throws `SupertextException` with an English message and a `reason` (e.g. `limit_exceeded`); `Service\Messages::of()` maps it to a `_t()` string. A new reason needs a `match` arm there and its strings in all four files.
+- The API client (`src/Api/`, no Silverstripe classes, built on the bundled SDK) throws `SupertextException` with an English message and a `reason` (e.g. `limit_exceeded`); `Service\Messages::of()` maps it to a `_t()` string. A new reason needs a `match` arm there and its strings in all four files.
 - Keep the three docs in `docs/` current with every change (see `CLAUDE.md`).
 
 ## Known limitations / roadmap

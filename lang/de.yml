@@ -70,6 +70,7 @@ de:
     EMPTY: 'Das übersetzte Dokument war leer.'
     HTTP_ERROR: 'Supertext hat mit HTTP {status} geantwortet.'
     LIMIT_EXCEEDED: 'Ihr Supertext-Übersetzungslimit ist erreicht. Bitte erweitern Sie Ihr Abonnement.'
+    INVALID_LANGUAGE_PAIR: 'Supertext unterstützt dieses Sprachpaar nicht ({source} → {target}). Prüfen Sie den Supertext-Code der Sprache.'
     NOT_FOUND: 'Die angeforderte Supertext-Ressource wurde nicht gefunden.'
     NO_API_KEY: 'Es ist kein Supertext-API-Schlüssel eingerichtet. Setzen Sie die Umgebungsvariable SUPERTEXT_API_KEY. Noch kein Supertext-Konto? Erstellen Sie eines unter {signup}. Den API-Schlüssel erzeugen Sie unter {apikey} (erfordert die Admin-Rolle).'
     NO_FILE_ID: 'Supertext hat keine Datei-ID zurückgegeben.'
