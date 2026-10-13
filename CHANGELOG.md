@@ -16,6 +16,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 
+- Language codes with a variant or extension, e.g. a *Supertext language* `de-DE-1996` or `en-US-x-twain`, are now sent to Supertext as `de-DE` / `en-US` (Supertext rejected them).
 - Target locales without a region (e.g. `de`) and a *Supertext language* without one are now sent to Supertext as `de-DE` (`fr` → `fr-FR`, `en` → `en-US`, …); Supertext rejected them with "invalid language pair". A *Supertext language* such as `de_ch` is normalized to `de-CH`. The source language is sent without region, as before.
 
 ## 0.1.0 — 2026-10-07
