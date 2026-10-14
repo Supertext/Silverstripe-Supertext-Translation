@@ -118,8 +118,9 @@ class Translator
             }
             $results[] = $this->translateInto($client, $record, $units, $sourceLocale, $target, $overwrite, $member);
         }
-        if ($this->rejectedKey !== null) {
-            Reports::authenticationFailed($this->rejectedKey);
+        $rejected = $this->takeRejectedKey();
+        if ($rejected !== null) {
+            Reports::authenticationFailed($rejected);
         }
 
         foreach ($results as $result) {
@@ -183,6 +184,15 @@ class Translator
         }
 
         return ['created' => !$exists] + $result;
+    }
+
+    /** The HTTP status of a key Supertext rejected during this translate() call, once. */
+    private function takeRejectedKey(): ?int
+    {
+        $status = $this->rejectedKey;
+        $this->rejectedKey = null;
+
+        return $status;
     }
 
     /**

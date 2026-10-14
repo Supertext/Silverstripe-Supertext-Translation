@@ -29,7 +29,7 @@ final class LanguageCodes
     /** @return list<array{code: string, name: string, politeness: bool}> the targets Supertext offers */
     public static function targets(): array
     {
-        return array_values(Languages::TARGETS);
+        return Languages::TARGETS;
     }
 
     /**

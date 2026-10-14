@@ -114,7 +114,7 @@ final class Reports
     {
         $result = self::run(Reporting::TEST_CONNECTION);
 
-        return $result?->check ?? self::fallbackCheck();
+        return $result->check ?? self::fallbackCheck();
     }
 
     /** The check task: the key check and a `check` report now (if reports are on). */
