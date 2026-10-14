@@ -9,6 +9,7 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Security\PermissionProvider;
 use Supertext\Silverstripe\Api\LanguageCodes;
 use Supertext\Silverstripe\Api\SupertextClient;
+use Supertext\Silverstripe\Sdk\V1\InstallationReporter;
 use TractorCow\Fluent\Model\Locale;
 
 /**
@@ -18,6 +19,11 @@ use TractorCow\Fluent\Model\Locale;
  *     environment: live        # live | staging | testing
  *     api_url: ''              # custom base URL; SUPERTEXT_API_URL wins
  *     timeout: 180             # seconds per locale
+ *     version_reports: true    # "Send version information to Supertext"; SUPERTEXT_VERSION_REPORTS wins
+ *
+ * The Supertext language of each Fluent locale is set on the locale (LocaleExtension): together
+ * they are the language mapping (locale → Supertext code). A locale without one that is itself a
+ * Supertext code (de_CH → de-CH) is sent as that code; any other locale has no Supertext language.
  *
  * The API key comes from the SUPERTEXT_API_KEY environment variable. Administrators create a
  * Supertext account at SIGNUP_URL and generate the key at API_KEY_URL (Admin role required).
@@ -43,6 +49,9 @@ class Supertext implements PermissionProvider
 
     private static float $poll_interval = 2.0;
 
+    /** "Send version information to Supertext" (on by default); SUPERTEXT_VERSION_REPORTS=0 turns it off. */
+    private static bool $version_reports = true;
+
     public function apiKey(): string
     {
         return SupertextClient::normalizeKey((string) Environment::getEnv('SUPERTEXT_API_KEY'));
@@ -60,16 +69,49 @@ class Supertext implements PermissionProvider
         return max(10, (int) static::config()->get('timeout'));
     }
 
-    /** Supertext target code for a Fluent locale: the locale's override, else BCP-47 with a region (de_CH -> de-CH, de -> de-DE). */
-    public static function languageCode(Locale $locale): string
+    /**
+     * The language mapping: every locale whose "Supertext language" is set → that code.
+     *
+     * @return array<string, string>
+     */
+    public static function languageMapping(): array
     {
-        return LanguageCodes::target((string) $locale->Locale, (string) $locale->getField('SupertextCode'));
+        $mapping = [];
+        foreach (Locale::getCached() as $locale) {
+            $code = trim((string) $locale->getField('SupertextCode'));
+            if ($code !== '') {
+                $mapping[(string) $locale->Locale] = $code;
+            }
+        }
+
+        return $mapping;
     }
 
-    /** Supertext source code for a Fluent locale: the bare language of the override or the locale (en_GB -> en). */
+    /**
+     * Supertext target code for a Fluent locale: its Supertext language, else the Supertext code equal to
+     * the locale (de_CH → de-CH). No guessing: "de" or "es_ES" need a Supertext language.
+     *
+     * @throws Api\SupertextException unsupported_language
+     */
+    public static function languageCode(Locale $locale): string
+    {
+        return LanguageCodes::target((string) $locale->Locale, self::languageMapping());
+    }
+
+    /** The target code, or null when the locale has no Supertext language (status page, editor). */
+    public static function languageCodeOrNull(Locale $locale): ?string
+    {
+        return LanguageCodes::targetOrNull((string) $locale->Locale, self::languageMapping());
+    }
+
+    /**
+     * Supertext source code for a Fluent locale: the source form of its Supertext language or of the locale (en_US -> en).
+     *
+     * @throws Api\SupertextException unsupported_language
+     */
     public static function sourceCode(Locale $locale): string
     {
-        return LanguageCodes::source((string) $locale->Locale, (string) $locale->getField('SupertextCode'));
+        return LanguageCodes::source((string) $locale->Locale, self::languageMapping());
     }
 
     /** "more" (formal), "less" (informal) or "" (default). */
@@ -80,12 +122,35 @@ class Supertext implements PermissionProvider
         return in_array($value, ['more', 'less'], true) ? $value : '';
     }
 
-    public function client(): SupertextClient
+    /** Whether version reports are on: the version_reports setting, overridden by SUPERTEXT_VERSION_REPORTS. */
+    public function versionReportsEnabled(): bool
+    {
+        $env = Environment::getEnv('SUPERTEXT_VERSION_REPORTS');
+
+        return InstallationReporter::reportsEnabled(
+            (bool) static::config()->get('version_reports'),
+            is_scalar($env) && $env !== false ? (string) $env : null
+        );
+    }
+
+    /**
+     * HTTP for the Supertext API and the version reports (Guzzle). The timeout is the request's own
+     * (translation requests 60 s, the key check 10 s, a version report 3 s).
+     *
+     * @return callable(string, string, array<string, string>, ?string, float=): array{status: int, body: string, headers: array<string, string>}
+     */
+    public function transport(): callable
     {
         $http = new Client(['http_errors' => false, 'timeout' => 60, 'connect_timeout' => 15]);
-        $transport = static function (string $method, string $url, array $headers, ?string $body) use ($http): array {
+
+        return static function (string $method, string $url, array $headers, ?string $body, float $timeout = 60.0) use ($http): array {
             // A GuzzleException (no connection) becomes the client's "Could not reach Supertext" error.
-            $response = $http->request($method, $url, ['headers' => $headers, 'body' => $body]);
+            $response = $http->request($method, $url, [
+                'headers' => $headers,
+                'body' => $body,
+                'timeout' => $timeout,
+                'connect_timeout' => min(15.0, $timeout),
+            ]);
             $out = [];
             foreach ($response->getHeaders() as $name => $values) {
                 $out[strtolower($name)] = implode(', ', $values);
@@ -93,11 +158,14 @@ class Supertext implements PermissionProvider
 
             return ['status' => $response->getStatusCode(), 'body' => (string) $response->getBody(), 'headers' => $out];
         };
+    }
 
+    public function client(): SupertextClient
+    {
         return new SupertextClient(
             $this->apiKey(),
             $this->baseUrl(),
-            $transport,
+            $this->transport(),
             $this->timeout(),
             (float) static::config()->get('poll_interval')
         );

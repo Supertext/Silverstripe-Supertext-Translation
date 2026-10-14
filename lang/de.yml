@@ -2,12 +2,13 @@ de:
   Supertext\Silverstripe\Control\SupertextAdmin:
     API: API
     API_KEY: API-Schlüssel
+    CHECKED_AT: 'geprüft {time}'
     CODE: Supertext-Sprache
-    CONNECTED: 'Verbunden. Der API-Schlüssel funktioniert.'
     CONNECTION: Verbindung
     DEFAULT: Standard
     FORMAL: 'Formell (Sie, vous)'
     INFORMAL: 'Informell (du, tu)'
+    KEY_CHECK: 'Prüfung des API-Schlüssels'
     KEY_HELP: 'Noch kein Supertext-Konto? <a href="{signup}" target="_blank" rel="noopener">Erstellen Sie eines auf supertext.com</a>. Den API-Schlüssel erzeugen Sie unter <a href="{apikey}" target="_blank" rel="noopener">supertext.com → Integrations → API</a> (erfordert die Admin-Rolle).'
     KEY_MISSING: 'Fehlt: Umgebungsvariable SUPERTEXT_API_KEY setzen'
     KEY_SET: 'Gesetzt (Umgebungsvariable SUPERTEXT_API_KEY)'
@@ -16,19 +17,31 @@ de:
     LOCALES_HELP: 'Die Fluent-Sprachen mit der Supertext-Sprache und der Anrede, mit der übersetzt wird. Ändern lässt sich das unter <a href="{link}">Locales</a>.'
     LOG: Übersetzungen
     MENUTITLE: Supertext
+    NOT_CHECKED: 'Noch nicht geprüft. «Verbindung testen» prüft den Schlüssel sofort.'
+    NOT_MAPPED: 'Nicht zugeordnet: Wählen Sie für diese Sprache eine Supertext-Sprache'
+    NO_POLITENESS: 'Supertext bietet für diese Sprache keine formelle/informelle Anrede an'
+    PING: 'Ping-Adresse: {url}'
     POLITENESS: Anrede
+    REPORTS: 'Versionsinformationen an Supertext senden'
+    REPORTS_HELP: 'Sendet die URL der Website sowie die Versionen dieses Plugins, des CMS und der Laufzeitumgebung an Supertext, nach einem Update und wenn sich der API-Schlüssel ändert. So sieht der Supertext-Support, welche Version Sie einsetzen. Es werden keine Inhalte, kein API-Schlüssel und keine Personendaten übertragen. Ausschalten mit version_reports: false in der YAML-Konfiguration oder SUPERTEXT_VERSION_REPORTS=0.'
+    REPORTS_OFF: 'Aus'
+    REPORTS_ON: 'Ein'
     TEST: 'Verbindung testen'
     TESTING: 'Wird getestet …'
     TIMEOUT: 'Zeitlimit pro Sprache'
     VERSION: Plugin-Version
   Supertext\Silverstripe\Extension\LocaleExtension:
+    AUTO: 'Wie die Sprache: {code}'
     CODE: Supertext-Sprache
-    CODE_HELP: 'Sprachcode, der an Supertext geht. Leer lassen, um {code} zu verwenden.'
+    CODE_HELP: 'Die Supertext-Sprache, in die und aus der diese Sprache übersetzt wird. Supertext akzeptiert nur seine eigenen Codes: Wählen Sie einen, wenn die Sprache keiner davon ist (z. B. de → German (Switzerland), es_ES → Spanish).'
     DEFAULT: Standard
     FORMAL: 'Formell (Sie, vous)'
     INFORMAL: 'Informell (du, tu)'
+    NONE: 'Nicht zugeordnet: Wählen Sie eine Supertext-Sprache'
+    NO_POLITENESS: 'Supertext bietet für {code} keine formelle oder informelle Anrede an: Lassen Sie hier «Standard» stehen, sonst schlagen Übersetzungen in diese Sprache fehl.'
     POLITENESS: Anrede
     POLITENESS_HELP: 'Wie Supertext die Leserinnen und Leser in dieser Sprache anspricht.'
+    UNKNOWN: '{code} (nicht in der Liste von Supertext)'
     db_SupertextCode: Supertext-Code
     db_SupertextPoliteness: Supertext-Anrede
   Supertext\Silverstripe\Extension\SupertextCMSMainExtension:
@@ -45,11 +58,20 @@ de:
     INTO: In
     LAST: 'Am {date} mit Supertext übersetzt'
     NOT_CONFIGURED: 'Supertext ist noch nicht eingerichtet: Eine Administratorin oder ein Administrator muss SUPERTEXT_API_KEY setzen.'
+    NOT_MAPPED: 'Keine Supertext-Sprache: Eine Administratorin oder ein Administrator muss unter Locales eine wählen'
     NO_SOURCE: 'Diese Seite hat in {locale} noch keinen eigenen Inhalt. Wechseln Sie in eine Sprache, in der sie geschrieben wurde, und übersetzen Sie von dort.'
     OVERWRITE: 'Bestehende Übersetzungen überschreiben'
     OVERWRITE_HELP: 'Gewählte Sprachen, die bereits eigenen Inhalt haben, erhalten eine neue Übersetzung aus {locale}: Seitenfelder und Inhaltsblöcke. Änderungen in diesen Sprachen gehen verloren. Ausgeschaltet lassen, um nur fehlende Sprachen zu übersetzen.'
     TAB: Supertext
     TITLE: 'Mit Supertext übersetzen'
+  Supertext\Silverstripe\Model\SupertextState:
+    PLURALNAME: 'Supertext-Zustände'
+    PLURALS:
+      one: 'Ein Supertext-Zustand'
+      other: '{count} Supertext-Zustände'
+    SINGULARNAME: 'Supertext-Zustand'
+    db_Key: 'Schlüssel'
+    db_Value: 'Wert'
   Supertext\Silverstripe\Model\TranslationLog:
     PLURALNAME: Supertext-Übersetzungen
     PLURALS:
@@ -69,8 +91,13 @@ de:
     DELETED: 'Das Dokument wurde bei Supertext gelöscht, bevor es heruntergeladen werden konnte.'
     EMPTY: 'Das übersetzte Dokument war leer.'
     HTTP_ERROR: 'Supertext hat mit HTTP {status} geantwortet.'
+    KEYCHECK_ERROR: 'Der API-Schlüssel konnte nicht geprüft werden: Supertext hat mit einem Fehler geantwortet ({status}). Die Einstellungen sind gespeichert; prüfen Sie ihn später erneut.'
+    KEYCHECK_INVALID: 'Supertext hat den API-Schlüssel abgelehnt. Prüfen Sie, ob Sie den ganzen Schlüssel kopiert haben, oder erstellen Sie einen neuen unter supertext.com → Integrations → API (erfordert die Rolle Admin). Noch kein Supertext-Konto? Erstellen Sie eines auf supertext.com.'
+    KEYCHECK_MISSING: 'Es ist noch kein API-Schlüssel eingetragen. Noch kein Supertext-Konto? Erstellen Sie eines auf supertext.com. Ihren API-Schlüssel erstellen Sie unter supertext.com → Integrations → API (erfordert die Rolle Admin).'
+    KEYCHECK_OK: 'API-Schlüssel geprüft: Die Verbindung zu Supertext funktioniert.'
+    KEYCHECK_UNREACHABLE: 'Der API-Schlüssel konnte nicht geprüft werden, weil Supertext nicht erreichbar ist. Die Einstellungen sind gespeichert; prüfen Sie ihn später erneut.'
     LIMIT_EXCEEDED: 'Ihr Supertext-Übersetzungslimit ist erreicht. Bitte erweitern Sie Ihr Abonnement.'
-    INVALID_LANGUAGE_PAIR: 'Supertext unterstützt dieses Sprachpaar nicht ({source} → {target}). Prüfen Sie den Supertext-Code der Sprache.'
+    INVALID_LANGUAGE_PAIR: 'Supertext unterstützt dieses Sprachpaar nicht ({source} → {target}). Prüfen Sie die Supertext-Sprache der Sprache.'
     NOT_FOUND: 'Die angeforderte Supertext-Ressource wurde nicht gefunden.'
     NO_API_KEY: 'Es ist kein Supertext-API-Schlüssel eingerichtet. Setzen Sie die Umgebungsvariable SUPERTEXT_API_KEY. Noch kein Supertext-Konto? Erstellen Sie eines unter {signup}. Den API-Schlüssel erzeugen Sie unter {apikey} (erfordert die Admin-Rolle).'
     NO_FILE_ID: 'Supertext hat keine Datei-ID zurückgegeben.'
@@ -80,6 +107,8 @@ de:
     TRANSLATION_FAILED: 'Supertext konnte das Dokument nicht übersetzen.'
     UNAVAILABLE: 'Der Supertext-Dienst ist zurzeit nicht verfügbar.'
     UNREACHABLE: 'Supertext ist nicht erreichbar: {error}'
+    UNSUPPORTED_FEATURE: 'Supertext bietet für diese Sprache keine formelle oder informelle Anrede an. Bitten Sie Ihre Administratorin oder Ihren Administrator, die Anrede der Sprache auf «Standard» zu setzen (Locales → die Sprache).'
+    UNSUPPORTED_LANGUAGE: 'Die Sprache {language} ist noch keiner Supertext-Sprache zugeordnet. Bitten Sie Ihre Administratorin oder Ihren Administrator, sie zuzuordnen (Locales → die Sprache → Supertext-Sprache).'
   Supertext\Silverstripe\Service\Translator:
     FORBIDDEN: 'Sie dürfen diese Seite in {locale} nicht bearbeiten.'
     NO_LOCALE: 'Unbekannte Sprache {locale}.'

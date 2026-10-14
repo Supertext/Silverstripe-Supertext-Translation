@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # CI: starts the demo image twice against MySQL with the stand-in API, checks the demo accounts
 # (created once, never duplicated, passwords never logged) and translates the sample article as
-# the editor. Needs: docker image supertext-silverstripe-demo, MySQL at $MYSQL_URL (root), the
-# `mysql` client, and the stand-in on 127.0.0.1:8765.
+# the editor, then the Commando Center parts: the public ping route and the version reports, sent to
+# the stand-in (never the live center). Needs: docker image supertext-silverstripe-demo, MySQL at
+# $MYSQL_URL (root), the `mysql` client, `jq`, and the stand-in on 127.0.0.1:8765.
 set -euo pipefail
 PORT=8080
 B=http://127.0.0.1:$PORT
@@ -16,7 +17,8 @@ start() {
 	docker rm -f demo >/dev/null 2>&1 || true
 	docker run -d --name demo --network host -e PORT=$PORT -e DATABASE_URL="$MYSQL_URL" -e SS_BASE_URL=$B \
 		-e DEMO_ADMIN_EMAIL -e DEMO_ADMIN_PASSWORD -e DEMO_EDITOR_EMAIL -e DEMO_EDITOR_PASSWORD \
-		-e SUPERTEXT_API_KEY=anything -e SUPERTEXT_API_URL=http://127.0.0.1:8765/v1/ supertext-silverstripe-demo >/dev/null
+		-e SUPERTEXT_API_KEY=anything -e SUPERTEXT_API_URL=http://127.0.0.1:8765/v1/ \
+		-e SUPERTEXT_REPORT_URL=http://127.0.0.1:8765/report supertext-silverstripe-demo >/dev/null
 	for _ in $(seq 90); do curl -sf -o /dev/null $B/Security/login && break; sleep 2; done
 	curl -sf -o /dev/null $B/Security/login
 	docker logs demo 2>&1 | grep '\[demo\]' || true
@@ -35,7 +37,7 @@ test "$(q "select count(*) from Permission p join \`Group\` g on g.ID=p.GroupID 
 test "$(q "select group_concat(Locale order by Sort) from Fluent_Locale")" = "en_US,de_CH,fr_CH,it_CH"
 echo "accounts and locales OK"
 
-sake tasks:supertext-check | grep > /dev/null 'The API key works'
+sake tasks:supertext-check | grep > /dev/null 'API key checked: the connection to Supertext works'
 PAGE=$(q "select ID from SiteTree where URLSegment='swiss-chocolate-shipped-worldwide'")
 sake tasks:supertext-translate --page="$PAGE" --from=en_US --member=ci-editor@example.com | tee /tmp/translate.log
 test "$(grep -c ': translated' /tmp/translate.log)" = 3
@@ -48,4 +50,16 @@ q "select HTML from ElementContent_Localised where Locale='de_CH'" | grep > /dev
 test "$(q "select count(*) from Element_Localised where Locale='it_CH'")" = 3
 test "$(q "select Title from Element_Localised where Locale='fr_CH' order by RecordID limit 1")" = "De Berne vers le monde"
 test "$(q "select count(*) from SupertextTranslation where Status='translated'")" = 3
+
+# Commando Center: public ping (no login), version reports to the stand-in, state in SupertextState.
+test "$(curl -s "$B/supertext/ping?challenge=ci-challenge-0123456789")" = '{"ok":true,"plugin":"Silverstripe-Supertext-Translation","challenge":"ci-challenge-0123456789"}'
+test "$(curl -s -o /dev/null -w '%{http_code}' "$B/supertext/ping?challenge=bad")" = 400
+headers=$(curl -s -D - -o /dev/null "$B/supertext/ping?challenge=ci-challenge-0123456789")
+grep -qi '^cache-control:.*no-store' <<< "$headers"
+reports=$(curl -sf http://127.0.0.1:8765/reports)
+jq -e --arg cb "$B/supertext/ping" 'map(select(.event == "installed" and .plugin.name == "Silverstripe-Supertext-Translation" and .system.name == "Silverstripe CMS" and .callback.url == $cb and .api_key_check.status == "ok")) | length == 1' <<< "$reports" > /dev/null
+jq -e 'map(select(.event == "check")) | length >= 1' <<< "$reports" > /dev/null
+if grep -qF '"anything"' <<< "$reports"; then echo "The API key appeared in a report"; exit 1; fi
+q "select Value from SupertextState where \`Key\`='reporter'" | grep > /dev/null '"status":"ok"'
+echo "Commando Center check passed"
 echo "Demo check passed"

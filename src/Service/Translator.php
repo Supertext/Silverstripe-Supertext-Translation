@@ -11,8 +11,10 @@ use SilverStripe\ORM\FieldType\DBHTMLVarchar;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
+use Supertext\Silverstripe\Api\LanguageCodes;
 use Supertext\Silverstripe\Api\SupertextClient;
 use Supertext\Silverstripe\Api\SupertextException;
+use Supertext\Silverstripe\Sdk\V1\SupertextException as SdkException;
 use Supertext\Silverstripe\Model\TranslationLog;
 use Supertext\Silverstripe\Supertext;
 use TractorCow\Fluent\Extension\FluentExtension;
@@ -39,6 +41,9 @@ class Translator
     private static int $max_depth = 5;
 
     private ?SupertextClient $client = null;
+
+    /** HTTP status of a rejected API key during the current translate() call, for the key check. */
+    private ?int $rejectedKey = null;
 
     public function setClient(SupertextClient $client): static
     {
@@ -97,9 +102,12 @@ class Translator
         }
 
         $client = $this->client ?? Supertext::singleton()->client();
+        // Version report and key check (only if the key changed), after the response.
+        Reports::onRequest();
         if (!$client->hasApiKey()) {
             throw new SupertextException(Messages::noApiKey());
         }
+        $this->rejectedKey = null;
 
         $units = $this->inLocale($source, fn () => $this->collect($this->reload($record)));
 
@@ -109,6 +117,9 @@ class Translator
                 continue;
             }
             $results[] = $this->translateInto($client, $record, $units, $sourceLocale, $target, $overwrite, $member);
+        }
+        if ($this->rejectedKey !== null) {
+            Reports::authenticationFailed($this->rejectedKey);
         }
 
         foreach ($results as $result) {
@@ -159,6 +170,10 @@ class Translator
             $translations = $this->send($client, $units, $source, $targetLocale);
             $this->inLocale($target, fn () => $this->apply($record, $units, $translations, $exists));
         } catch (SupertextException $e) {
+            if ($e->reason === 'auth_failed') {
+                $this->rejectedKey = in_array($e->getCode(), [401, 403], true) ? $e->getCode() : 401;
+            }
+
             return ['status' => TranslationLog::ERROR, 'message' => Messages::of($e)] + $result;
         } catch (\Throwable $e) {
             \SilverStripe\Core\Injector\Injector::inst()->get(\Psr\Log\LoggerInterface::class)
@@ -245,17 +260,21 @@ class Translator
         if ($units === []) {
             return [];
         }
+        // No guessing: a locale without a Supertext language fails here (unsupported_language), nothing is sent.
+        $targetCode = Supertext::languageCode($target);
+        $sourceCode = Supertext::sourceCode($source);
+        $politeness = Supertext::politeness($target);
+        if ($politeness !== '' && LanguageCodes::supportsPoliteness($targetCode) === false) {
+            // Supertext would refuse it (unsupported_feature); say so instead of dropping the administrator's setting.
+            throw SupertextClient::fromSdk(new SdkException(SdkException::UNSUPPORTED_FEATURE, targetLang: $targetCode, feature: 'politeness'));
+        }
+
         $segments = [];
         foreach ($units as $i => $unit) {
             $segments[$i] = ['text' => $unit['value'], 'html' => $unit['html']];
         }
 
-        return $client->translateSegments(
-            $segments,
-            Supertext::languageCode($target),
-            Supertext::sourceCode($source),
-            Supertext::politeness($target) ?: 'default'
-        );
+        return $client->translateSegments($segments, $targetCode, $sourceCode, $politeness ?: 'default');
     }
 
     /** Writes the translations to the draft stage of the current (target) locale. */

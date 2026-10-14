@@ -11,11 +11,15 @@ final class SupertextClientTest extends TestCase
     /** @var list<array{method: string, url: string, headers: array<string, string>, body: ?string}> */
     private array $calls = [];
 
+    /** @var list<float> */
+    private array $timeouts = [];
+
     /** @param callable(string, string, ?string): array{status: int, body: string, headers?: array<string, string>} $handler */
     private function client(callable $handler, string $key = 'test-key'): SupertextClient
     {
-        $transport = function (string $method, string $url, array $headers, ?string $body) use ($handler): array {
+        $transport = function (string $method, string $url, array $headers, ?string $body, float $timeout = 0.0) use ($handler): array {
             $this->calls[] = compact('method', 'url', 'headers', 'body');
+            $this->timeouts[] = $timeout;
 
             return $handler($method, $url, $body) + ['headers' => []];
         };
@@ -36,7 +40,7 @@ final class SupertextClientTest extends TestCase
             };
         });
 
-        $html = $client->translateDocument('<div data-st-id="0">Hello</div>', 'de-CH', 'en-GB', 'more');
+        $html = $client->translateDocument('<div data-st-id="0">Hello</div>', 'de-CH', 'en', 'more');
 
         self::assertStringContainsString('Hallo', $html);
         self::assertSame(
@@ -53,7 +57,7 @@ final class SupertextClientTest extends TestCase
         self::assertStringContainsString("filename=\"content.html\"\r\nContent-Type: text/html\r\n\r\n<div", $post['body']);
     }
 
-    public function testSendsBareTargetsWithTheirDefaultRegion(): void
+    public function testSendsTheCodesAsGiven(): void
     {
         $client = $this->client(fn (string $method, string $url) => match (true) {
             $method === 'POST'                  => ['status' => 200, 'body' => '{"file_id":"f1"}'],
@@ -62,9 +66,9 @@ final class SupertextClientTest extends TestCase
             default                             => ['status' => 200, 'body' => '{}'],
         });
 
-        $client->translateDocument('<div data-st-id="0">Hello</div>', 'de', 'en_US');
+        $client->translateDocument('<div data-st-id="0">Hello</div>', 'es', 'en');
 
-        self::assertStringContainsString("name=\"target_lang\"\r\n\r\nde-DE\r\n", $this->calls[0]['body']);
+        self::assertStringContainsString("name=\"target_lang\"\r\n\r\nes\r\n", $this->calls[0]['body']);
         self::assertStringContainsString("name=\"source_lang\"\r\n\r\nen\r\n", $this->calls[0]['body']);
     }
 
@@ -209,6 +213,55 @@ final class SupertextClientTest extends TestCase
         } catch (SupertextException $e) {
             self::assertSame('invalid_language_pair', $e->reason);
             self::assertSame(['en', 'xx-YY'], $e->args);
+        }
+    }
+
+    public function testReportsAFeatureSupertextDoesNotOffer(): void
+    {
+        $client = $this->client(fn () => ['status' => 400, 'body' => '{"error_code":"FEATURE_ERROR","detail":"politeness not supported"}']);
+
+        try {
+            $client->translateDocument('<p>x</p>', 'en-US', 'de', 'more');
+            self::fail('Expected an exception');
+        } catch (SupertextException $e) {
+            self::assertSame('unsupported_feature', $e->reason);
+        }
+    }
+
+    public function testRefusesAnEmptyTargetWithoutSending(): void
+    {
+        $client = $this->client(fn () => ['status' => 200, 'body' => '{}']);
+
+        try {
+            $client->translateDocument('<p>x</p>', '');
+            self::fail('Expected an exception');
+        } catch (SupertextException $e) {
+            self::assertSame('unsupported_language', $e->reason);
+        }
+        self::assertSame([], $this->calls);
+    }
+
+    public function testChecksTheKeyWithoutThrowing(): void
+    {
+        self::assertSame('ok', $this->client(fn () => ['status' => 200, 'body' => '{}'])->checkApiKey()->status);
+        self::assertSame('invalid', $this->client(fn () => ['status' => 401, 'body' => '{}'])->checkApiKey()->status);
+        self::assertSame('missing', $this->client(fn () => ['status' => 200, 'body' => '{}'], '')->checkApiKey()->status);
+        self::assertSame(10.0, $this->timeouts[0], 'the key check has its own 10 s timeout');
+    }
+
+    /** Every SDK error code has a reason, and every reason a message in Service\Messages::of(). */
+    public function testEverySdkErrorCodeHasAReasonAndAMessage(): void
+    {
+        $codes = array_values((new \ReflectionClass(\Supertext\Silverstripe\Sdk\V1\SupertextException::class))->getConstants());
+        $reasons = (new \ReflectionClass(SupertextClient::class))->getConstant('REASONS');
+        $messages = (string) file_get_contents(__DIR__ . '/../../src/Service/Messages.php');
+        foreach ($codes as $code) {
+            if (!\is_string($code) || !preg_match('/^[a-z_]+$/', $code)) {
+                continue;
+            }
+            self::assertArrayHasKey($code, $reasons, $code);
+            $reason = $reasons[$code][0];
+            self::assertTrue($reason === 'no_api_key' || str_contains($messages, "'" . $reason . "' => _t("), "Messages::of() has no arm for $reason");
         }
     }
 

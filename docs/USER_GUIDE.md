@@ -9,7 +9,7 @@ The Supertext tab and its messages appear in your CMS interface language (Englis
 1. In **Pages**, choose the locale you translate **from** with the locale switcher at the top of the CMS menu (usually English), and open the page.
 2. Save your changes first. Supertext translates the saved draft.
 3. Open the **Supertext** tab.
-4. Under **Into**, tick the locales to create. Locales where the page doesn't exist yet are ticked.
+4. Under **Into**, tick the locales to create. Locales where the page doesn't exist yet are ticked. A greyed-out locale marked **No Supertext language** can't be translated yet: your administrator needs to choose its Supertext language under *Locales*.
 5. Click **Translate**.
 
 ![The Supertext tab of the page "Swiss chocolate" in English: Into Deutsch, Français and Italiano (all ticked) and the Translate button](images/01-supertext-tab.png)
@@ -67,7 +67,9 @@ Empty fields are skipped.
 | *Choose at least one locale to translate into.* | Tick at least one locale under *Into*. |
 | *Authentication failed. Please check the Supertext API key.* | The API key is wrong. Ask your administrator. |
 | *Your Supertext translation limit is exceeded.* | Your organisation's Supertext limit is used up. |
-| *Supertext does not support this language pair (en → …).* | Supertext can't translate into this locale, or its Supertext code is wrong. Tell your administrator. |
+| *The language … has no Supertext language yet.* | Your administrator hasn't told the module which Supertext language to use for that locale. Ask them to map it; the other locales are translated. |
+| *Supertext does not support this language pair (en → …).* | Supertext can't translate into this locale, or its Supertext language is wrong. Tell your administrator. |
+| *Supertext offers no formal or informal tone for this language.* | The locale's form of address can't be used with Supertext; ask your administrator to set it to *Default*. |
 | *Too many requests to Supertext. Please try again shortly.* | Supertext was busy; try again in a moment. |
 | *Timed out waiting for the Supertext translation.* / *The Supertext service is currently unavailable.* | Supertext took too long or is unavailable. Try again later. |
 

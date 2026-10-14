@@ -4,60 +4,70 @@ namespace Supertext\Silverstripe\Tests\unit;
 
 use PHPUnit\Framework\TestCase;
 use Supertext\Silverstripe\Api\LanguageCodes;
+use Supertext\Silverstripe\Api\SupertextException;
 
+/** No guessing: the locale's Supertext language, else an exact Supertext code, else unsupported_language. */
 final class LanguageCodesTest extends TestCase
 {
-    public function testBareSourceIsSentAsIs(): void
-    {
-        self::assertSame('en', LanguageCodes::source('en'));
-        self::assertSame('de', LanguageCodes::source('DE'));
-    }
-
-    public function testRegionalSourceLosesItsRegion(): void
-    {
-        self::assertSame('en', LanguageCodes::source('en-US'));
-        self::assertSame('en', LanguageCodes::source('en_GB'));
-        self::assertSame('de', LanguageCodes::source('de-CH'));
-        self::assertSame('zh', LanguageCodes::source('zh_Hant_TW'));
-        self::assertSame('', LanguageCodes::source(''));
-    }
-
-    public function testBareTargetGetsTheDefaultRegion(): void
-    {
-        self::assertSame('de-DE', LanguageCodes::target('de'));
-        self::assertSame('en-US', LanguageCodes::target('en'));
-        self::assertSame('fr-FR', LanguageCodes::target('FR'));
-        self::assertSame('sl-SI', LanguageCodes::target('sl'));
-        self::assertSame('zh-CN', LanguageCodes::target('zh'));
-    }
-
-    public function testRegionalTargetIsKeptAndNormalized(): void
+    public function testLocaleThatIsASupertextCodeIsUsed(): void
     {
         self::assertSame('de-CH', LanguageCodes::target('de_CH'));
-        self::assertSame('de-CH', LanguageCodes::target('de-ch'));
-        self::assertSame('en-GB', LanguageCodes::target('EN_gb'));
+        self::assertSame('en-US', LanguageCodes::target('en_US'));
+        self::assertSame('fr-CH', LanguageCodes::target('fr-ch'));
+        self::assertSame('es', LanguageCodes::target('es'));
         self::assertSame('zh-Hant', LanguageCodes::target('zh_hant'));
-        self::assertSame('es-419', LanguageCodes::target('es-419'));
     }
 
-    public function testOverrideWins(): void
+    public function testNoDefaultRegions(): void
     {
-        self::assertSame('de-AT', LanguageCodes::target('de', 'de_at'));
-        self::assertSame('fr-CH', LanguageCodes::target('fr-FR', ' fr-CH '));
-        self::assertSame('pt', LanguageCodes::source('en-US', 'pt-BR'));
-        self::assertSame('de-DE', LanguageCodes::target('de', '  '));
-        self::assertSame('fr-FR', LanguageCodes::target('fr-CH', 'fr'), 'a bare override gets the default region');
+        foreach (['de', 'en', 'es_ES', 'sl_SI', 'zh_CN', 'xx'] as $locale) {
+            try {
+                LanguageCodes::target($locale);
+                self::fail("$locale should need a Supertext language");
+            } catch (SupertextException $e) {
+                self::assertSame('unsupported_language', $e->reason);
+                self::assertSame([$locale], $e->args);
+            }
+            self::assertNull(LanguageCodes::targetOrNull($locale));
+        }
     }
 
-    public function testUnknownBareCodeIsSentUnchanged(): void
+    public function testTheMappingWins(): void
     {
-        self::assertSame('xx', LanguageCodes::target('xx'));
-        self::assertSame('gsw', LanguageCodes::target('gsw'));
+        $mapping = ['de' => 'de-CH', 'es_ES' => 'es', 'en_US' => 'en-GB', 'it_CH' => '  '];
+        self::assertSame('de-CH', LanguageCodes::target('de', $mapping));
+        self::assertSame('es', LanguageCodes::target('es_ES', $mapping));
+        self::assertSame('en-GB', LanguageCodes::target('en_US', $mapping));
+        self::assertSame('it-CH', LanguageCodes::target('it_CH', $mapping), 'a blank entry means no mapping');
+        self::assertSame('xx-YY', LanguageCodes::target('xx', ['xx' => 'xx-YY']), 'a mapped code is sent as it is');
     }
 
-    public function testSameLanguageWithAnotherRegionIsAllowed(): void
+    public function testSourcesAreBareAndUseTheSameMapping(): void
     {
-        self::assertSame('en', LanguageCodes::source('en-US'));
-        self::assertSame('en-GB', LanguageCodes::target('en-GB'));
+        self::assertSame('en', LanguageCodes::source('en_US'));
+        self::assertSame('de', LanguageCodes::source('de_CH'));
+        self::assertSame('de', LanguageCodes::source('de', ['de' => 'de-CH']));
+        self::assertSame('en', LanguageCodes::source('en_XX', ['en_XX' => 'en-US']));
+        self::assertSame('', LanguageCodes::source(''));
+        $this->expectException(SupertextException::class);
+        LanguageCodes::source('xx_YY');
+    }
+
+    public function testPolitenessOnlyWhereSupertextOffersIt(): void
+    {
+        self::assertTrue(LanguageCodes::supportsPoliteness('de-CH'));
+        self::assertFalse(LanguageCodes::supportsPoliteness('en-US'));
+        self::assertFalse(LanguageCodes::supportsPoliteness('rm'));
+        self::assertNull(LanguageCodes::supportsPoliteness('xx'));
+    }
+
+    public function testListsTheSupertextTargets(): void
+    {
+        $codes = array_column(LanguageCodes::targets(), 'code');
+        self::assertContains('de-CH', $codes);
+        self::assertContains('es', $codes);
+        self::assertNotContains('es-ES', $codes);
+        self::assertSame('de-CH', LanguageCodes::match('DE_ch'));
+        self::assertNull(LanguageCodes::match('de'));
     }
 }

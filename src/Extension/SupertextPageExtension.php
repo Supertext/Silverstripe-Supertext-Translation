@@ -61,6 +61,7 @@ class SupertextPageExtension extends Extension
         $options = [];
         $default = [];
         $existing = [];
+        $unmapped = [];
         foreach (Translator::singleton()->describe($record) as $item) {
             /** @var Locale $locale */
             $locale = $item['locale'];
@@ -68,6 +69,13 @@ class SupertextPageExtension extends Extension
                 continue;
             }
             $label = Convert::raw2xml($locale->getTitle()) . ' <code>' . Convert::raw2xml($locale->Locale) . '</code>';
+            if (Supertext::languageCodeOrNull($locale) === null) {
+                // No guessing: without a Supertext language nothing can be sent for this locale.
+                $label .= ' <span class="supertext-chip">' . _t(self::class . '.NOT_MAPPED', 'No Supertext language: an administrator needs to choose one under Locales') . '</span>';
+                $options[$locale->Locale] = DBField::create_field('HTMLFragment', $label);
+                $unmapped[] = $locale->Locale;
+                continue;
+            }
             if ($item['last']) {
                 $date = DBDatetime::create()->setValue($item['last'])->Date();
                 $label .= ' <span class="supertext-chip">' . _t(self::class . '.LAST', 'Translated with Supertext on {date}', ['date' => $date]) . '</span>';
@@ -95,6 +103,7 @@ class SupertextPageExtension extends Extension
                 ) . '</p>'
             )),
             CheckboxSetField::create('SupertextTargets', _t(self::class . '.INTO', 'Into'), $options, $default)
+                ->setDisabledItems($unmapped)
                 ->addExtraClass('supertext-targets no-change-track')
                 ->setAttribute('data-existing', json_encode($existing)),
             CheckboxField::create('SupertextOverwrite', _t(self::class . '.OVERWRITE', 'Overwrite existing translations'))

@@ -15,15 +15,16 @@ use Supertext\Silverstripe\Sdk\Http\TransportException;
 
 /**
  * Sends the Supertext SDK's requests through a callable: Guzzle in the module,
- * a fake in tests. Every HTTP answer, 4xx and
+ * a fake in tests. The callable gets the request's timeout in seconds as fifth argument
+ * (the version report has 3 s, the key check 10 s). Every HTTP answer, 4xx and
  * 5xx included, goes back to the SDK; only a missing answer is an exception.
  */
 final class CallableTransport implements HttpTransport
 {
-    /** @var callable(string, string, array<string, string>, ?string): array{status: int, body: string, headers?: array<string, string>} */
+    /** @var callable(string, string, array<string, string>, ?string, float): array{status: int, body: string, headers?: array<string, string>} */
     private $send;
 
-    /** @param callable(string $method, string $url, array<string, string> $headers, ?string $body): array{status: int, body: string, headers?: array<string, string>} $send */
+    /** @param callable(string $method, string $url, array<string, string> $headers, ?string $body, float $timeout): array{status: int, body: string, headers?: array<string, string>} $send */
     public function __construct(callable $send)
     {
         $this->send = $send;
@@ -32,7 +33,7 @@ final class CallableTransport implements HttpTransport
     public function send(HttpRequest $request): HttpResponse
     {
         try {
-            $response = ($this->send)($request->method, $request->url, $request->headers, $request->body);
+            $response = ($this->send)($request->method, $request->url, $request->headers, $request->body, $request->timeout);
         } catch (\Throwable $e) {
             throw new TransportException($e->getMessage(), 0, $e);
         }

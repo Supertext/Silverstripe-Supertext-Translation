@@ -8,7 +8,9 @@
 
 namespace Supertext\Silverstripe\Service;
 
+use SilverStripe\Core\Convert;
 use Supertext\Silverstripe\Api\SupertextException;
+use Supertext\Silverstripe\Sdk\V1\ApiKeyCheck;
 
 /** Shows errors from the API client (which only speaks English) in the CMS user's language. */
 final class Messages
@@ -33,7 +35,9 @@ final class Messages
             'no_api_key' => self::noApiKey(),
             'unreachable' => _t(self::class . '.UNREACHABLE', 'Could not reach Supertext: {error}', ['error' => (string) ($e->args[0] ?? '')]),
             'auth_failed' => _t(self::class . '.AUTH_FAILED', 'Authentication failed. Please check the Supertext API key. No Supertext account yet? Create one at {signup}. Generate your API key at {apikey} (requires the Admin role).', $links),
-            'invalid_language_pair' => _t(self::class . '.INVALID_LANGUAGE_PAIR', 'Supertext does not support this language pair ({source} → {target}). Check the Supertext code of the locale.', ['source' => (string) ($e->args[0] ?? ''), 'target' => (string) ($e->args[1] ?? '')]),
+            'invalid_language_pair' => _t(self::class . '.INVALID_LANGUAGE_PAIR', 'Supertext does not support this language pair ({source} → {target}). Check the Supertext language of the locale.', ['source' => (string) ($e->args[0] ?? ''), 'target' => (string) ($e->args[1] ?? '')]),
+            'unsupported_language' => _t(self::class . '.UNSUPPORTED_LANGUAGE', 'The language {language} has no Supertext language yet. Ask your administrator to map it (Locales → the locale → Supertext language).', ['language' => (string) ($e->args[0] ?? '')]),
+            'unsupported_feature' => _t(self::class . '.UNSUPPORTED_FEATURE', 'Supertext offers no formal or informal tone for this language. Ask your administrator to set the form of address of the locale to Default (Locales → the locale).'),
             'not_found' => _t(self::class . '.NOT_FOUND', 'The requested Supertext resource was not found.'),
             'too_large' => _t(self::class . '.TOO_LARGE', 'The content is too large for Supertext to translate in one go.'),
             'rate_limited' => _t(self::class . '.RATE_LIMITED', 'Too many requests to Supertext. Please try again shortly.'),
@@ -47,6 +51,40 @@ final class Messages
         }
 
         return $e->detail !== '' ? $text . ' (' . $e->detail . ')' : $text;
+    }
+
+    /**
+     * The result of the automatic API key check in the CMS user's language (texts from the Commando
+     * Center's guide). $html: escaped, "supertext.com" and "supertext.com → Integrations → API" as links
+     * opening in a new tab; otherwise plain text with the bare URLs.
+     */
+    public static function keyCheck(ApiKeyCheck $check, bool $html = true): string
+    {
+        $text = match ($check->status) {
+            ApiKeyCheck::OK => _t(self::class . '.KEYCHECK_OK', 'API key checked: the connection to Supertext works.'),
+            ApiKeyCheck::INVALID => _t(self::class . '.KEYCHECK_INVALID', 'Supertext rejected the API key. Check that you copied the whole key, or generate a new one at supertext.com → Integrations → API (requires the Admin role). No Supertext account yet? Create one at supertext.com.'),
+            ApiKeyCheck::MISSING => _t(self::class . '.KEYCHECK_MISSING', 'No API key is set yet. No Supertext account yet? Create one at supertext.com. Generate your API key at supertext.com → Integrations → API (requires the Admin role).'),
+            ApiKeyCheck::UNREACHABLE => _t(self::class . '.KEYCHECK_UNREACHABLE', 'The API key couldn\'t be checked because Supertext can\'t be reached. The settings are saved; check again later.'),
+            default => _t(self::class . '.KEYCHECK_ERROR', 'The API key couldn\'t be checked: Supertext answered with an error ({status}). The settings are saved; check again later.', ['status' => (string) ($check->httpStatus ?? $check->errorCode ?? '')]),
+        };
+
+        return self::withLinks($text, $html);
+    }
+
+    /** Turns "supertext.com → Integrations → API" and "supertext.com" into the API key and account links. */
+    public static function withLinks(string $text, bool $html = true): string
+    {
+        $path = 'supertext.com → Integrations → API';
+        if (!$html) {
+            $text = str_replace($path, "\x00", $text);
+            $text = (string) preg_replace('/\bsupertext\.com\b/u', self::SIGNUP_URL, $text);
+
+            return str_replace("\x00", $path . ' (' . self::API_KEY_URL . ')', $text);
+        }
+        $text = str_replace(Convert::raw2xml($path), "\x00", Convert::raw2xml($text));
+        $text = (string) preg_replace('/\bsupertext\.com\b/u', sprintf('<a href="%s" target="_blank" rel="noopener">supertext.com</a>', self::SIGNUP_URL), $text);
+
+        return str_replace("\x00", sprintf('<a href="%s" target="_blank" rel="noopener">%s</a>', self::API_KEY_URL, Convert::raw2xml($path)), $text);
     }
 
     public static function noApiKey(): string

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Supertext\Silverstripe\Sdk;
+namespace Supertext\Silverstripe\Sdk\V1;
 
 /**
  * One text to translate: plain text (escaped on the way out, line breaks kept) or an HTML fragment.

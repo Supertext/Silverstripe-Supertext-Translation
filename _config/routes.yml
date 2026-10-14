@@ -1,0 +1,10 @@
+---
+Name: supertext-translation-routes
+After:
+  - '#rootroutes'
+  - '#coreroutes'
+---
+# Public ping for the Supertext Commando Center (see docs/INSTALLATION.md → Version information).
+SilverStripe\Control\Director:
+  rules:
+    'supertext/ping': Supertext\Silverstripe\Control\PingController

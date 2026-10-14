@@ -20,11 +20,12 @@ vendor/bin/sake db:build --flush
 
 (Publishing to Packagist is planned; then the first line is no longer needed.)
 
-`db:build` adds the table `SupertextTranslation` (the translation log) and two fields to Fluent's locales. The module adds:
+`db:build` adds the tables `SupertextTranslation` (the translation log) and `SupertextState` (the module's own state, see [Version information and the API key check](#version-information-and-the-api-key-check)) and two fields to Fluent's locales. The module adds:
 
 - a **Supertext** tab to every page in the CMS (for users with the Supertext permission),
-- a **Supertext** section in the CMS menu: connection status, the installed plugin version, *Test connection* (administrators), the locales and the translation log,
+- a **Supertext** section in the CMS menu: connection status, the latest API key check, the installed plugin version, *Test connection* (administrators), whether version information is sent to Supertext, the locales and the translation log,
 - *Supertext language* and *Form of address* to each locale under **Locales**,
+- the public route `/supertext/ping` (see [The ping endpoint](#the-ping-endpoint)),
 - the tasks `supertext-translate` and `supertext-check`.
 
 ### Update
@@ -43,7 +44,7 @@ composer remove supertext/silverstripe-supertext-translation
 vendor/bin/sake db:build --flush
 ```
 
-Translations already made are normal Fluent content and stay. The table `SupertextTranslation` and the columns `SupertextCode` and `SupertextPoliteness` of `Fluent_Locale` are left in the database (Silverstripe never drops them); delete them by hand if you like.
+Translations already made are normal Fluent content and stay. The tables `SupertextTranslation` and `SupertextState` and the columns `SupertextCode` and `SupertextPoliteness` of `Fluent_Locale` are left in the database (Silverstripe never drops them); delete them by hand if you like.
 
 ## API key
 
@@ -60,22 +61,34 @@ SUPERTEXT_API_KEY="your-key"
 
 You can paste it with or without the `Supertext-Auth-Key ` prefix that Supertext shows. The module sends it as `Authorization: Supertext-Auth-Key <key>`. Keep the key out of your repository.
 
-Check it under **Supertext → Test connection** (administrators) or with `vendor/bin/sake tasks:supertext-check`. Both call a cost-free endpoint of the Supertext API.
+Check it under **Supertext → Test connection** (administrators) or with `vendor/bin/sake tasks:supertext-check`. Both call a cost-free endpoint of the Supertext API. The module also checks the key by itself when it changes (see [the API key check](#version-information-and-the-api-key-check)); the Supertext section shows the latest result with its time under *API key check*.
 
-![The Supertext section: "Connected. The API key works.", the API key's source, the live API address, the timeout, the plugin version, the links to create a Supertext account and generate the API key, the Test connection button, and the locales with their Supertext language and form of address](images/06-supertext-admin.png)
+![The Supertext section: the API key's source, the live API address, the timeout, the plugin version, the links to create a Supertext account and generate the API key, the Test connection button, and the locales with their Supertext language and form of address](images/06-supertext-admin.png)
 
 ## Locales
 
-The module translates between your Fluent locales (**Locales** in the CMS menu). Each target locale is sent to Supertext in BCP-47 form with a region (`de_CH` → `de-CH`); a locale without a region gets the usual one (`de` → `de-DE`, `fr` → `fr-FR`, `en` → `en-US`, `it` → `it-IT`, …). The source locale is sent without region (`en_US` → `en`). A locale's *Supertext language* wins over its code. Use regional locales where they matter: `de_CH` writes "ss" instead of "ß".
+The module translates between your Fluent locales (**Locales** in the CMS menu). Each locale needs a **Supertext language**, and Supertext accepts exactly these codes (its own language list, October 2026):
+
+| Language | Supertext codes |
+| --- | --- |
+| German, English, French, Italian, Portuguese | `de-DE`, `de-CH`, `de-AT`, `en-US`, `en-GB`, `fr-FR`, `fr-CH`, `it-IT`, `it-CH`, `pt-PT`, `pt-BR` |
+| Chinese, Serbian | `zh-Hans`, `zh-Hant`, `sr-Latn`, `sr-Cyrl` |
+| Swiss German | `gsw-u-sd-chzh` (Zurich), `gsw-u-sd-chbe` (Bern) |
+| All others, without region | `bg`, `cs`, `da`, `el`, `es`, `fi`, `hr`, `hu`, `ja`, `ko`, `nb`, `nl`, `pl`, `rm`, `ru`, `sk`, `sl`, `sq`, `sv`, `tr` |
+
+- A locale that **is** one of these codes (apart from upper/lower case and `_`/`-`) needs nothing: `de_CH` → `de-CH`, `fr_CH` → `fr-CH`, `en_US` → `en-US`, `nl` → `nl`.
+- **Every other locale needs its Supertext language set**: `de` (which German?), `es_ES` (→ `es`), `zh_CN` (→ `zh-Hans`), `nb_NO` (→ `nb`). The module never guesses a region: a locale without a Supertext language can't be translated into or from. The Supertext tab shows it greyed out with *No Supertext language*, and the Supertext section marks it *Not mapped*.
+- As the source, the locale is sent without region (`en_US` → `en`, `de_CH` → `de`); the same Supertext language serves both directions.
+- Use regional locales where they matter: `de-CH` writes "ss" instead of "ß".
 
 ![The Locales section: English (en_US, default), Deutsch (de_CH), Français (fr_CH) and Italiano (it_CH) with their URL segments](images/07-locales.png)
 
 Open a locale to set its two Supertext fields:
 
-- **Supertext language**: a different code to send to Supertext (e.g. `fr-CH` for a locale `fr_FR` used for Swiss readers). Empty means the locale's own code (with the usual region if it has none).
-- **Form of address**: *Formal (Sie, vous)*, *Informal (du, tu)* or *Default*.
+- **Supertext language**: a list of every Supertext language with its code. The first entry, *Same as the locale: de-CH*, uses the code that equals the locale; it reads *Not mapped: choose a Supertext language* when the locale isn't a Supertext code. A code set before (e.g. by an older version of the module) that isn't in the list stays selectable and is sent as it is.
+- **Form of address**: *Formal (Sie, vous)*, *Informal (du, tu)* or *Default*. Supertext doesn't offer it for English, Swiss German, Romansh, Albanian and Serbian: the field then says so, the Supertext section shows a warning, and translations into that locale fail with *Supertext offers no formal or informal tone for this language* until you set it back to *Default*.
 
-![The two Supertext fields of the locale Deutsch: Supertext language (empty, uses de-CH) and Form of address (Formal)](images/08-locale-settings.png)
+![The two Supertext fields of the locale Deutsch: Supertext language and Form of address (Formal)](images/08-locale-settings.png)
 
 ## Permissions
 
@@ -95,6 +108,7 @@ Supertext\Silverstripe\Supertext:
   environment: live          # live | staging | testing
   api_url: ''                # a different base URL; SUPERTEXT_API_URL wins
   timeout: 180               # seconds to wait for one locale
+  version_reports: true      # "Send version information to Supertext"; SUPERTEXT_VERSION_REPORTS wins
 
 Supertext\Silverstripe\Service\Translator:
   exclude_fields:            # localised fields that are never translated (merged with the defaults)
@@ -109,10 +123,12 @@ Supertext\Silverstripe\Service\Translator:
 | `Supertext.api_url` | – | A different base URL. |
 | `Supertext.timeout` | `180` | Seconds to wait for the translation of one locale. |
 | `Supertext.poll_interval` | `2` | Seconds between status checks. |
+| `Supertext.version_reports` | `true` | *Send version information to Supertext* (see [below](#version-information-and-the-api-key-check)). `false` turns it off. |
+| `SUPERTEXT_VERSION_REPORTS` (environment) | – | Wins over `version_reports`: `0` (or `false`, `off`, `no`) turns version reports off, `1` (`true`, `on`, `yes`) on. |
 | `Translator.exclude_fields` | `URLSegment`, `ExtraMeta`, `ReportClass`, `ExtraClass`, `Style` | Localised fields that are never translated. |
 | `Translator.max_depth` | `5` | How deep owned objects (area → blocks → nested blocks) are followed. |
 | `<YourClass>.supertext_exclude_fields` | – | Per class: more fields not to translate. |
-| Locale → *Supertext language* | the locale's code | Supertext language code for that locale. |
+| Locale → *Supertext language* | the Supertext code equal to the locale, if any | The language mapping: the Supertext code for that locale, as target and (without region) as source. Needed for every locale that isn't itself a Supertext code. |
 | Locale → *Form of address* | Default | Formal or informal tone for that locale. |
 
 ### What is translated
@@ -131,6 +147,22 @@ DNADesign\Elemental\Models\BaseElement:
 
 The module follows the objects a page *owns* (Silverstripe's `owns`), so blocks, nested blocks and other owned, localised objects are translated with the page. The *indirect* setup (a separate block area per locale) is not supported yet.
 
+## Version information and the API key check
+
+**Send version information to Supertext** is on by default (`version_reports: true`). Label and help text in the Supertext section: *Sends the site URL and the versions of this plugin, the CMS and the runtime to Supertext after an update and when the API key changes, so Supertext support can see which version you run. No content, no API key and no personal data are sent.*
+
+A report contains exactly: the site URL (Silverstripe's base URL: `SS_BASE_URL`, else the address of the request), the module's name (`Silverstripe-Supertext-Translation`) and version, the Silverstripe CMS and PHP versions, the Supertext SDK version, whether an API key is set, the result of the API key check below (status, time, HTTP status, Supertext's error code) and the address of the ping endpoint. **No content, no API key and no personal data are sent.** Reports go from the web server to Supertext, never from the editor's browser: the first time the module runs in the CMS, after an update of the module, Silverstripe or PHP, when the result of the key check changes, and from the `supertext-check` task. They are sent after the CMS has answered the request, wait at most 3 seconds, and a report that fails is not tried again for an hour; nothing about them can slow down or break a translation.
+
+To turn it off, set `version_reports: false` in your YAML configuration (and `?flush`) or the environment variable `SUPERTEXT_VERSION_REPORTS=0`. Nothing is sent at all then, and the ping endpoint answers 404. The Supertext section shows whether it is on.
+
+**The API key check** runs whether or not version information is sent: on back-end requests that run the module (the Supertext section, a translation) when the key in `SUPERTEXT_API_KEY` is new or changed (compared by a fingerprint stored in the database, never the key itself), on **Test connection**, in the `supertext-check` task, and when Supertext rejects the key during a translation. It's Supertext's cost-free `features` call; nothing is translated or billed. Silverstripe keeps the key in the environment and the settings in YAML, so there is no settings form to check it on save. The Supertext section shows the latest result with its time: *the connection works*, *Supertext rejected the API key* and *no API key is set* (both with the links to create an account and generate a key), *Supertext can't be reached*, or *Supertext answered with an error*.
+
+The module keeps this state (what was reported last, the latest key check) in the table `SupertextState`.
+
+### The ping endpoint
+
+`GET <site>/supertext/ping?challenge=…` is public (no login, no session, no CSRF token) and never cached. It answers only `{"ok":true,"plugin":"Silverstripe-Supertext-Translation","challenge":"…"}`, so Supertext can see that the site is reachable from the internet; a challenge that isn't 16–64 letters, digits, `_` or `-` gets 400, and with version reports off it answers 404. It returns nothing else: no versions, no settings, no data. If a firewall, maintenance mode or a login wall covers the whole site, allow this path.
+
 ## Interface languages
 
 The module's tab, CMS section, permission and messages are available in English, German, French and Italian. They follow each CMS user's interface language: *Profile* (your name at the top of the CMS menu) → *Interface Language*. Other languages show the English texts.
@@ -148,7 +180,12 @@ Translating runs in the editor's request: a few seconds per locale, up to `timeo
 | *This page has no content of its own in … yet* | The page was never saved in the locale you're in. Switch to the locale it was written in. |
 | *You are not allowed to edit this page in …* | Page permissions, or Fluent locale permissions that don't include that locale. |
 | *Authentication failed. Please check the Supertext API key.* | Wrong or revoked key, or a key for another environment. Use *Test connection*; generate a new key at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api) (Admin role). |
-| *Supertext does not support this language pair (en → xx-YY)* | The locale (or its *Supertext code*) isn't a language Supertext offers. Set the locale's *Supertext code* to a code such as `de-CH` or `fr`; the message shows the codes that were sent. |
+| *The language … has no Supertext language yet* / *Not mapped* in the Supertext section / *No Supertext language* on the tab | The locale isn't a Supertext code and has no *Supertext language*. Set one under **Locales** (see [Locales](#locales)). |
+| *Supertext does not support this language pair (en → xx-YY)* | The locale's *Supertext language* is a code Supertext doesn't offer (e.g. `es-ES` instead of `es`, set by an older version), or the same language as the source. Choose a code from the list; the message shows the codes that were sent. |
+| *Supertext offers no formal or informal tone for this language* | *Form of address* is Formal or Informal for a language without it (English, Swiss German, Romansh, Albanian, Serbian). Set it to *Default*. |
+| *Supertext rejected the API key* under *API key check* | The key is wrong or revoked. Check that the whole key was copied into `SUPERTEXT_API_KEY`, or generate a new one at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api) (Admin role). No Supertext account yet? [Create one](https://www.supertext.com/person/en/account/signin). Then *Test connection*. |
+| *The API key couldn't be checked because Supertext can't be reached* | The web server can't reach `api.supertext.com` (firewall, proxy, DNS). Translations need the same connection. |
+| *Not checked yet* under *API key check* | The check runs after the page has been shown; reload, or use *Test connection*. |
 | *Too many requests to Supertext* | The API's per-second limit was hit repeatedly although the module retries. Try again shortly. |
 | *Timed out waiting for the Supertext translation* or a 502/504 | Very long page: raise `timeout`, PHP's `max_execution_time` and the proxy timeout. |
 | Blocks stay in the source language | Blocks aren't localised by Fluent (see [Elemental blocks](#elemental-blocks)). |

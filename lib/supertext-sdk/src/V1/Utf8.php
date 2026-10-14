@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Supertext\Silverstripe\Sdk;
+namespace Supertext\Silverstripe\Sdk\V1;
 
 /**
  * Small UTF-8 helpers, so the SDK doesn't need ext-mbstring.

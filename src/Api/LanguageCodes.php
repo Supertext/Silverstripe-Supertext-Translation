@@ -8,38 +8,95 @@
 
 namespace Supertext\Silverstripe\Api;
 
-use Supertext\Silverstripe\Sdk\LanguageCodes as SdkLanguageCodes;
+use Supertext\Silverstripe\Sdk\V1\Languages;
+use Supertext\Silverstripe\Sdk\V1\SupertextException as SdkException;
 
 /**
- * CMS locales → Supertext language codes.
+ * Fluent locales → Supertext language codes, with the Supertext SDK's rules (the same in every
+ * Supertext plugin), without guessing.
  *
- * Supertext wants the source as a bare language ("en") and the target with a
- * region ("de-DE", "en-US"); a bare target such as "de" is rejected with
- * INVALID_LANGUAGE_PAIR. Locales without a region get the default region
- * from the Supertext SDK (same table in every Supertext module and plugin); unknown bare
- * codes are sent unchanged, so Supertext's error names them. The site's own
- * override (the locale's Supertext code) wins over the locale.
+ * Supertext accepts exactly the codes of its `GET features` list (Languages::TARGETS/SOURCES):
+ * bare sources ("en"); targets regional only for German, English, French, Italian and Portuguese
+ * ("de-CH", "en-US"), with a script for Chinese and Serbian ("zh-Hans", "sr-Latn"), bare for the
+ * others ("es", "nl"). A locale is resolved by the mapping (each locale's "Supertext language"),
+ * else a Supertext code equal to the locale apart from case and "_"/"-" ("de_CH" → "de-CH"),
+ * else the error unsupported_language and nothing is sent. There are no default regions.
+ *
+ * Has no Silverstripe dependencies.
  */
 final class LanguageCodes
 {
-    /** The region Supertext uses when a locale has none (the SDK's table). */
-    public const DEFAULT_REGION = SdkLanguageCodes::DEFAULT_REGIONS;
-
-    /** "de_ch" → "de-CH", "DE" → "de", "zh_hant" → "zh-Hant", "es-419" stays. */
-    public static function normalize(string $code): string
+    /** @return list<array{code: string, name: string, politeness: bool}> the targets Supertext offers */
+    public static function targets(): array
     {
-        return SdkLanguageCodes::normalize($code);
+        return array_values(Languages::TARGETS);
     }
 
-    /** Source code to send: the bare language of the override, else of the locale ("en-GB" → "en"). */
-    public static function source(string $locale, string $override = ''): string
+    /**
+     * Target code to send.
+     *
+     * @param array<string, string> $mapping locale → Supertext code (the locales' "Supertext language")
+     *
+     * @throws SupertextException unsupported_language when the locale is neither mapped nor a Supertext code
+     */
+    public static function target(string $locale, array $mapping = []): string
     {
-        return SdkLanguageCodes::source(trim($override) !== '' ? $override : $locale);
+        try {
+            return Languages::target($locale, self::clean($mapping));
+        } catch (SdkException $e) {
+            throw SupertextClient::fromSdk($e);
+        }
     }
 
-    /** Target code to send: the override, else the locale; without a region it gets the default one ("de" → "de-DE"). */
-    public static function target(string $locale, string $override = ''): string
+    /**
+     * Source code to send: the mapped code or the locale in its source form ("de-CH" → "de").
+     *
+     * @param array<string, string> $mapping locale → Supertext code
+     *
+     * @throws SupertextException unsupported_language
+     */
+    public static function source(string $locale, array $mapping = []): string
     {
-        return SdkLanguageCodes::target(trim($override) !== '' ? $override : $locale);
+        try {
+            return Languages::source($locale, self::clean($mapping));
+        } catch (SdkException $e) {
+            throw SupertextClient::fromSdk($e);
+        }
+    }
+
+    /**
+     * The target code, or null when the locale has none (for the status page and the editor).
+     *
+     * @param array<string, string> $mapping
+     */
+    public static function targetOrNull(string $locale, array $mapping = []): ?string
+    {
+        try {
+            return Languages::target($locale, self::clean($mapping));
+        } catch (SdkException) {
+            return null;
+        }
+    }
+
+    /** The Supertext code equal to the locale (apart from case and "_"/"-"), else null: "de_CH" → "de-CH", "de" → null. */
+    public static function match(string $locale): ?string
+    {
+        return Languages::matchTarget($locale);
+    }
+
+    /** Whether Supertext offers formal/informal for a target code; null for a code that isn't in its list. */
+    public static function supportsPoliteness(string $target): ?bool
+    {
+        return Languages::supportsPoliteness($target);
+    }
+
+    /**
+     * @param array<string, string> $mapping
+     *
+     * @return array<string, string> without blank entries
+     */
+    private static function clean(array $mapping): array
+    {
+        return array_filter(array_map(static fn ($code): string => trim((string) $code), $mapping), static fn (string $code): bool => $code !== '');
     }
 }

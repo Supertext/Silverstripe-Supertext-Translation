@@ -3,8 +3,12 @@
  * Docs screenshots and CI only: answers like the Supertext AI file translation API v1 and
  * returns German, French and Italian for the demo's sample article (samples.json: real
  * Supertext output, keyed by target language's primary subtag).
- * Unknown text comes back as "[<target>] text". Like the real API, it rejects bare targets ("de")
- * and regional sources ("en-US") with INVALID_LANGUAGE_PAIR. Listens on :8765 (any API key).
+ * Unknown text comes back as "[<target>] text". Like the real API, it accepts only the target codes
+ * Supertext lists (the bundled SDK's Languages::TARGETS: "de-CH", "es", "zh-Hans"; not "de" or
+ * "es-ES") and bare sources ("en"), else HTTP 404 INVALID_LANGUAGE_PAIR, and refuses formal/informal
+ * where it isn't offered (400 FEATURE_ERROR). Listens on :8765 (any API key).
+ * It stands in for the Commando Center too (SUPERTEXT_REPORT_URL=http://127.0.0.1:8765/report):
+ * POST /report answers 202, so screenshots and CI never report to the live center.
  */
 import http from 'node:http'
 import { randomBytes } from 'node:crypto'
@@ -20,6 +24,11 @@ const samples = Object.fromEntries(
   ]),
 )
 const files = new Map()
+// The targets Supertext offers, from the bundled SDK (code and whether formal/informal is offered).
+const sdkLanguages = readFileSync(new URL('../../lib/supertext-sdk/src/V1/Languages.php', import.meta.url), 'utf8')
+const targetList = sdkLanguages.slice(sdkLanguages.indexOf('TARGETS = ['), sdkLanguages.indexOf('];', sdkLanguages.indexOf('TARGETS = [')))
+const targets = new Map([...targetList.matchAll(/'code' => '([^']+)'.*?'politeness' => (true|false)/g)].map((m) => [m[1], m[2] === 'true']))
+const reports = []
 
 http
   .createServer(async (req, res) => {
@@ -28,6 +37,13 @@ http
       res.writeHead(status, { 'Content-Type': type })
       res.end(type === 'application/json' ? JSON.stringify(body) : body)
     }
+    if (req.method === 'POST' && path === '/report') {
+      const chunks = []
+      for await (const chunk of req) chunks.push(chunk)
+      reports.push(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'))
+      return send(202, { ok: true })
+    }
+    if (req.method === 'GET' && path === '/reports') return send(200, reports) // for checks: what was reported
     if (!/^Supertext-Auth-Key \S+$/.test(req.headers.authorization || '')) return send(401, { detail: 'missing key' })
     if (path === '/features') return send(200, {})
     if (req.method === 'POST') {
@@ -36,12 +52,13 @@ http
       const form = await new Request('http://x', { method: 'POST', headers: req.headers, body: Buffer.concat(chunks) }).formData()
       const file = form.get('file')
       if (!file || file.type !== 'text/html') return send(415, { detail: 'FILETYPE_NOT_ALLOWED' })
-      // Like the real API: bare targets ("de") and regional sources ("en-US") are rejected.
+      // Like the real API: only Supertext's target codes ("de" and "es-ES" are rejected) and bare sources.
       const target = String(form.get('target_lang') ?? '')
       const source = form.get('source_lang')
-      if (!/^[a-z]{2,3}-([A-Z]{2}|[A-Z][a-z]{3}|\d{3})$/.test(target) || (source !== null && !/^[a-z]{2,3}$/.test(String(source)))) {
-        return send(400, { detail: 'INVALID_LANGUAGE_PAIR' })
+      if (!targets.has(target) || (source !== null && !/^[a-z]{2,3}$/.test(String(source)))) {
+        return send(404, { error_code: 'INVALID_LANGUAGE_PAIR', source_lang: source, target_lang: target })
       }
+      if (form.get('politeness') !== null && !targets.get(target)) return send(400, { error_code: 'FEATURE_ERROR', detail: 'politeness' })
       const id = randomBytes(6).toString('hex')
       files.set(id, { html: await file.text(), target })
       return send(200, { file_id: id })

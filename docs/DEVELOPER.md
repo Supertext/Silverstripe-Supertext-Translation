@@ -27,17 +27,20 @@ apply(): in the target locale (draft): set the fields on each owned object and t
 
 | Path | Responsibility |
 | --- | --- |
-| `src/Api/` | Wrapper around the Supertext SDK (`SupertextClient`, `CallableTransport`), language codes, exception. No Silverstripe classes (HTTP through a transport callable), unit-tested on their own |
-| `lib/supertext-sdk/` | Bundled copy of the Supertext PHP SDK, namespace `Supertext\Silverstripe\Sdk` (see *Supertext SDK*) |
-| `src/Supertext.php` | Settings (YAML + `SUPERTEXT_API_KEY` / `SUPERTEXT_API_URL`), language code and tone per locale, the Guzzle client, the permission `SUPERTEXT_TRANSLATE` |
+| `src/Api/` | Wrapper around the Supertext SDK (`SupertextClient`, `CallableTransport`), language codes (`LanguageCodes`), the Commando Center glue (`Reporting`, `StateStore`), exception. No Silverstripe classes (HTTP through a transport callable), unit-tested on their own |
+| `lib/supertext-sdk/` | Bundled copy of the Supertext PHP SDK, namespace `Supertext\Silverstripe\Sdk` (API classes in `Sdk\V1`; see *Supertext SDK*) |
+| `src/Supertext.php` | Settings (YAML + `SUPERTEXT_API_KEY` / `SUPERTEXT_API_URL` / `SUPERTEXT_VERSION_REPORTS`), the language mapping, code and tone per locale, the Guzzle transport and client, the permission `SUPERTEXT_TRANSLATE` |
+| `src/Service/Reports.php` | Version reports and API key check: builds `Api\Reporting` from Silverstripe (base URL, versions, the setting, Guzzle, `DatabaseStateStore`) and runs it at the right moments (see *Commando Center*) |
+| `src/Service/DatabaseStateStore.php`, `src/Model/SupertextState.php` | Table `SupertextState` (`Key`, `Value`): the reporter's JSON state under `reporter` |
+| `src/Control/PingController.php` | Public `GET /supertext/ping` (route in `_config/routes.yml`) |
 | `src/Service/Translator.php` | Field rules, collecting, translating, saving |
 | `src/Extension/SupertextPageExtension.php` | The Supertext tab (fields are not saved into the record: `saveSupertext*()` no-ops) |
 | `src/Extension/SupertextCMSMainExtension.php` | The form action on `CMSMain` |
 | `src/Extension/LocaleExtension.php` | `SupertextCode`, `SupertextPoliteness` on Fluent's `Locale` |
-| `src/Control/SupertextAdmin.php` | The *Supertext* CMS section: status, plugin version, *Test connection*, locales, log |
+| `src/Control/SupertextAdmin.php` | The *Supertext* CMS section: status, latest API key check, plugin version, *Test connection*, version reports on/off and ping address, locales (*Not mapped*, tone warnings), log |
 | `src/PluginVersion.php` | The installed version from `Composer\InstalledVersions` (no second copy in the code) and its GitHub release link for `X.Y.Z` / `vX.Y.Z`; no Silverstripe classes, unit-tested |
 | `src/Model/TranslationLog.php` | Table `SupertextTranslation`: one row per record and target locale and run |
-| `src/Task/` | `sake tasks:supertext-translate --page=<id> --from=en_US [--to=de_CH,fr_CH] [--overwrite] [--member=<email>]`, `sake tasks:supertext-check` |
+| `src/Task/` | `sake tasks:supertext-translate --page=<id> --from=en_US [--to=de_CH,fr_CH] [--overwrite] [--member=<email>]`, `sake tasks:supertext-check` (key check, language mapping, `check` report) |
 | `client/` | Tab script (overwrite option, busy state, submitting buttons outside the toolbar) and styles, exposed to `_resources` |
 | `lang/` | English, German, French and Italian strings (`en.yml` from `sake tasks:i18nTextCollectorTask --module=supertext/silverstripe-supertext-translation`; `de.yml`, `fr.yml`, `it.yml` by hand) |
 | `src/Service/Messages.php` | Shows a `SupertextException` from the API client in the user's language (by its `reason`), falling back to the client's English message |
@@ -61,7 +64,7 @@ Each value is one `data-st-id` element, so a whole HTML field (all its paragraph
 
 Shared with the WordPress plugin and every other Supertext CMS plugin:
 
-1. `POST {base}translate/ai/file`: multipart with `file` (part `Content-Type` exactly `text/html`, no charset, or the API answers 415), `target_lang` (with a region, e.g. `de-CH`), optional `source_lang` (bare language, e.g. `en`); see *Language codes*, optional `politeness` (`more`/`less`). Returns `{file_id}`.
+1. `POST {base}translate/ai/file`: multipart with `file` (part `Content-Type` exactly `text/html`, no charset, or the API answers 415), `target_lang` (a Supertext target code, e.g. `de-CH`, `es`), optional `source_lang` (bare language, e.g. `en`); see *Language codes*, optional `politeness` (`more`/`less`, only for targets that offer it). Returns `{file_id}`.
 2. `GET …/{file_id}/status` until `done` (`error`, `limit_exceeded`, `deleted` are terminal).
 3. `GET …/{file_id}/translation` returns the translated HTML.
 4. `DELETE …/{file_id}` (files also expire after 24 h).
@@ -72,25 +75,36 @@ Auth header: `Authorization: Supertext-Auth-Key <key>`. The header name must be 
 
 ## Supertext SDK
 
-The protocol above, the retries, the language codes and the `data-st-id` document come from the official Supertext PHP SDK ([Supertext/Supertext-API-SDK-and-Guide](https://github.com/Supertext/Supertext-API-SDK-and-Guide)). The module ships a copy in `lib/supertext-sdk/` with its namespace changed from `Supertext\Sdk` to `Supertext\Silverstripe\Sdk` (Composer autoloads it from the module's `composer.json`; `tests/bootstrap.php` too), so sites install nothing extra and another package that requires the SDK itself can't clash with it. `lib/supertext-sdk/COMMIT` names the SDK revision.
+The protocol above, the retries, the language list, the key check, the version reports and the `data-st-id` document come from the official Supertext PHP SDK ([Supertext/Supertext-API-SDK-and-Guide](https://github.com/Supertext/Supertext-API-SDK-and-Guide)). The module ships a copy in `lib/supertext-sdk/` with its namespace changed from `Supertext\Sdk` to `Supertext\Silverstripe\Sdk` (Composer autoloads it from the module's `composer.json`; `tests/bootstrap.php` too), so sites install nothing extra and another package that requires the SDK itself can't clash with it. `lib/supertext-sdk/COMMIT` names the SDK revision (currently 0.2.1). Everything that talks to the API is in `Sdk\V1` (`Client`, `Languages`, `InstallationReporter`, …); only the HTTP transport (`Sdk\Http`) and `Sdk\Supertext::SDK_VERSION` are version-neutral. The vendor script copies `src/` with its subfolders and rewrites every `Supertext\Sdk\…` namespace (`V1` included).
 
 - Never edit `lib/supertext-sdk/`. Fix the SDK in its repository, then run `scripts/vendor-sdk.sh [ref]` (default `main`; `SDK_DIR=/path/to/clone` uses a local clone) and the tests.
-- `src/Api/SupertextClient.php` keeps the module's interface (`translateDocument`, `translateSegments`, `validateApiKey`, transport callable) and turns every SDK error code into a `SupertextException` reason (`REASONS`); `Service\Messages::of()` translates it. A new SDK error code needs a reason there, a `match` arm in `Messages` and its strings in all four `lang/` files.
+- `src/Api/SupertextClient.php` keeps the module's interface (`translateDocument`, `translateSegments`, `validateApiKey`, `checkApiKey`, transport callable) and turns every SDK error code into a `SupertextException` reason (`REASONS`); `Service\Messages::of()` translates it. A new SDK error code needs a reason there, a `match` arm in `Messages` and its strings in all four `lang/` files.
 - PHPStan analyses `src/` only; the SDK has its own checks in its repository.
 - Segments missing from Supertext's answer are left untouched in the target locale.
 - The live API answers an unknown language (`xx-YY`) with HTTP 404 `INVALID_LANGUAGE_PAIR`; the SDK reports it as `invalid_language_pair` with both codes, shown as "Supertext does not support this language pair (en → xx-YY)".
 
 ## Language codes
 
-Supertext wants the **source as a bare language** (`en`, `de`, `fr`) and the **target as a regional code** (`de-DE`, `fr-CH`, `en-US`). A bare target such as `de`, or a regional source such as `en-US`, is rejected with `INVALID_LANGUAGE_PAIR`. Translating within one language (`en` → `en-GB`) is allowed.
+Supertext accepts exactly the codes its `GET features` lists (the SDK's `Languages::TARGETS` / `SOURCES`, from the live API): bare sources (`en`, `de`); targets in one exact form each, regional for German, English, French, Italian and Portuguese (`de-CH`, `en-US`, `pt-BR`), with a script for Chinese and Serbian (`zh-Hans`, `sr-Latn`), a dialect for Swiss German (`gsw-u-sd-chzh`), bare for the others (`es`, `nl`, `sl`). Anything else is HTTP 404 `INVALID_LANGUAGE_PAIR`; formal/informal for a target without it (`en-US`, `rm`, `sq`, `sr-*`, `gsw-*`) is HTTP 400 `FEATURE_ERROR` (`unsupported_feature`).
 
-`src/Api/LanguageCodes.php` (the SDK's `LanguageCodes` plus the locale's Supertext code; no CMS dependency, `tests/unit/LanguageCodesTest.php`) turns locales into the codes sent:
+**No guessing.** `src/Api/LanguageCodes.php` (the SDK's `Languages`; no CMS dependency, `tests/unit/LanguageCodesTest.php`) resolves a Fluent locale with **one mapping for both directions**: `Supertext::languageMapping()` = every locale whose *Supertext language* (`Fluent_Locale.SupertextCode`) is set → that code.
 
-- **Source:** the bare language of the source locale's *Supertext language*, else of the locale (`en_US` → `en`).
-- **Target:** the target locale's *Supertext language* if set (normalized: `de_ch` → `de-CH`), else the Fluent locale. Either way, a code with a region keeps it, normalized (`de_CH`/`de-ch` → `de-CH`; scripts and numeric regions such as `zh-Hant`, `es-419` keep their form; variants and extensions are dropped: `de-DE-1996` → `de-DE`, `en-US-x-twain` → `en-US`); a bare language gets its default region: ar→ar-SA, bg→bg-BG, cs→cs-CZ, da→da-DK, de→de-DE, el→el-GR, en→en-US, es→es-ES, et→et-EE, fi→fi-FI, fr→fr-FR, hr→hr-HR, hu→hu-HU, it→it-IT, ja→ja-JP, ko→ko-KR, lt→lt-LT, lv→lv-LV, nb→nb-NO, nl→nl-NL, pl→pl-PL, pt→pt-PT, ro→ro-RO, ru→ru-RU, sk→sk-SK, sl→sl-SI, sr→sr-RS, sv→sv-SE, th→th-TH, tr→tr-TR, uk→uk-UA, vi→vi-VN, zh→zh-CN (same table as the other Supertext plugins). Unknown bare codes are sent unchanged, so Supertext's error names them.
+- **Target:** the mapping wins (its value is sent as it is, even if the SDK's list doesn't know it); else the Supertext code equal to the locale apart from case and `_`/`-` (`de_CH` → `de-CH`, `nl` → `nl`); else `unsupported_language` (reason `unsupported_language`, `{language}` = the locale) and nothing is sent for that locale. There are no default regions: `de`, `es_ES`, `zh_CN` need a mapping.
+- **Source:** the mapped code in its source form (`de-CH` → `de`, SDK 0.2.1), else the locale's language if Supertext offers it as a source (`en_US` → `en`), else `unsupported_language`.
+- **Tone:** `Translator::send()` refuses `more`/`less` for a target where `Languages::supportsPoliteness()` is false with `unsupported_feature`, before calling Supertext, so the administrator's setting isn't silently dropped.
+- **UI:** the locale's *Supertext language* is a dropdown of `Languages::TARGETS` (name and code); empty means the exact match (*Same as the locale: de-CH*) or *Not mapped*. An older value not in the list is kept as an extra option. The *Form of address* field warns for targets without a tone. The Supertext section shows the code per locale, *Not mapped*, and tone warnings; the Supertext tab greys out unmapped locales (*No Supertext language*); `supertext-check` lists the mapping and fails while a locale is unmapped.
 
-`SupertextClient` applies the same rule to whatever it is given (`Supertext::languageCode()` / `sourceCode()` feed it), and the stand-in (`tests/docs/stand-in.mjs`) rejects bare targets and regional sources like the real API.
+`SupertextClient` sends the codes it is given; the stand-in (`tests/docs/stand-in.mjs`) accepts exactly the targets of the bundled SDK's list and bare sources, like the real API. The demo's locales (`en_US`, `de_CH`, `fr_CH`, `it_CH`) are Supertext codes and need no mapping.
 
+## Commando Center: version reports, key check, ping
+
+Protocol: [Commando-Center-Supertext-Translation](https://github.com/Supertext/Commando-Center-Supertext-Translation) → `docs/DEVELOPER.md` → *Report protocol*. The SDK's `InstallationReporter`, `checkApiKey()`, `reportsEnabled()` and `pingResponse()` implement it; `src/Api/Reporting.php` loads and stores the reporter's state and never throws, `src/Service/Reports.php` supplies what Silverstripe knows.
+
+- **Setting:** `Supertext.version_reports` (YAML, default `true`), overridden by `SUPERTEXT_VERSION_REPORTS` (read with `Environment::getEnv`, passed to `InstallationReporter::reportsEnabled()`). Off: no reports, ping 404. `SUPERTEXT_REPORT_URL` sends reports elsewhere (tests, the stand-in's `POST /report`).
+- **Report fields:** plugin `Silverstripe-Supertext-Translation` with `PluginVersion::current()` (Composer); system `Silverstripe CMS` with the installed `silverstripe/cms` version (else `silverstripe/framework`); runtime PHP; site URL `Director::absoluteBaseURL()` (`SS_BASE_URL`, else the request); `callback.url` = `<site>/supertext/ping`. HTTP through Guzzle (`Supertext::transport()`, which honours the request's own timeout: 3 s for reports, 10 s for the key check).
+- **When:** Silverstripe has no settings form for the module (key in the environment, settings in YAML), so there is no `afterSettingsSaved`. `onRequest` runs once per request on back-end requests that run the module: `SupertextAdmin::init()` and `Translator::translate()` (the Translate action and the translate task); it reports `installed`, `upgraded` or `api_key_check` and checks the key only when its fingerprint changed. It is queued with `register_shutdown_function` and runs after `fastcgi_finish_request()` / `litespeed_finish_request()` where available (PHP-FPM, LiteSpeed), so the response isn't delayed; under mod_php it runs at the end of the request (usually nothing to send). A translation that gets 401/403 runs `authenticationFailed` once per request. *Test connection* runs `testConnection` and shows the check (`Messages::keyCheck()`, the center's texts in four languages). `supertext-check` runs `testConnection`, then `reportCheck`.
+- **State:** JSON in the table `SupertextState` (`Key` = `reporter`), via `DatabaseStateStore`. It holds the versions and key status last reported, the time of the last failed report and the latest key check with the key's SHA-256 fingerprint, never the key.
+- **Ping:** `PingController` on `supertext/ping` (`_config/routes.yml`): a plain `Controller`, so no login, no session, no CSRF token; `HTTPCacheControlMiddleware::disableCache()`; status, headers and body exactly as `pingResponse()` returns them.
 
 ## Local development
 
@@ -127,9 +141,11 @@ composer install
 vendor/bin/phpunit
 ```
 
-- `tests/unit/SupertextClientTest.php`: the SDK wrapper: protocol, auth header and prefix, 429 retries, error reasons (language pair included), clean-up, segments (plain text, HTML, blank, missing) and splitting into several documents.
+- `tests/unit/SupertextClientTest.php`: the SDK wrapper: protocol, auth header and prefix, codes sent as given, 429 retries, error reasons (language pair, unsupported language and feature included), clean-up, segments (plain text, HTML, blank, missing), splitting into several documents, the key check, and that every SDK error code has a reason and a `Messages::of()` arm.
+- `tests/unit/LanguageCodesTest.php`: no default regions, exact matches, the mapping for targets and sources, tone support.
+- `tests/unit/ReportingTest.php`: the Commando Center glue with a fake API and a fake center: the `installed` report (fields, callback URL, 3 s timeout, never the key), nothing sent again, `upgraded`, a rejected key reported once, *Test connection*, the `check` report, reports off (key still checked), a missing key, a broken or garbled state store, the ping answers.
 - `tests/unit/LangFilesTest.php`: `de.yml`, `fr.yml` and `it.yml` have every string of `en.yml` with the same placeholders, tags and URLs, and `en.yml` has every `_t(self::class . '.KEY')` used in `src/`.
-- `tests/demo-check.sh` (CI): the demo image on MySQL with the stand-in, started twice: demo accounts created once and never duplicated, no passwords in the log, the Editors group and its permissions, the locales, `supertext-check`, translation of the sample page as the editor into three locales (page fields, ASCII URL segments, block titles and HTML with markup), the skip on a second run, and the log.
+- `tests/demo-check.sh` (CI): the demo image on MySQL with the stand-in, started twice: demo accounts created once and never duplicated, no passwords in the log, the Editors group and its permissions, the locales, `supertext-check`, translation of the sample page as the editor into three locales (page fields, ASCII URL segments, block titles and HTML with markup), the skip on a second run, the log, and the Commando Center: the public ping (answer, 400, `no-store`), exactly one `installed` report and a `check` report sent to the stand-in (`SUPERTEXT_REPORT_URL`, read back from its `GET /reports`) without the key, and the state in `SupertextState`.
 
 CI (`.github/workflows/ci.yml`) on every push and pull request: **test** (PHP lint, PHPUnit), **phpstan** (see *Code quality and security checks*) and **demo** (builds `demo/Dockerfile`, runs `tests/demo-check.sh`).
 
@@ -164,6 +180,8 @@ The public demo is a container built from `demo/Dockerfile`: PHP 8.3 with Apache
 | `DEMO_EDITOR_EMAIL`, `DEMO_EDITOR_PASSWORD` | Editor for automated tests and screenshots: member of **Editors** (*Access to Pages*, *Translate content with Supertext*, view draft content), no locale restrictions, so every locale. Silverstripe's default *Content Authors* group lacks the Supertext permission, so the demo creates this group. |
 | `SUPERTEXT_API_KEY` | Supertext key |
 | `SUPERTEXT_API_URL` | Optional, e.g. a stand-in API |
+| `SUPERTEXT_VERSION_REPORTS` | Optional; `0` turns *Send version information to Supertext* off (on by default; the demo reports like any site) |
+| `SUPERTEXT_REPORT_URL` | Tests only: where version reports go instead of Supertext's center (CI: the stand-in) |
 | `PORT` | Port Apache listens on (Railway sets it) |
 
 Railway also sets `RAILWAY_PUBLIC_DOMAIN`; the entrypoint makes `SS_BASE_URL` from it and trusts the proxy (`SS_TRUSTED_PROXY_IPS=*`) for HTTPS.
@@ -190,12 +208,12 @@ The images in `docs/images/` are generated by `tests/docs/screenshots.mjs` (Play
 cd tests/docs && npm install && npx playwright install chromium
 npm run stand-in &
 # a fresh demo (db:build + supertext-demo-setup with DEMO_* set), served on :8096 with
-# SUPERTEXT_API_KEY=anything SUPERTEXT_API_URL=http://127.0.0.1:8765/v1/
+# SUPERTEXT_API_KEY=anything SUPERTEXT_API_URL=http://127.0.0.1:8765/v1/ SUPERTEXT_REPORT_URL=http://127.0.0.1:8765/report
 BASE_URL=http://127.0.0.1:8096 DEMO_ADMIN_EMAIL=… DEMO_ADMIN_PASSWORD=… \
   DEMO_EDITOR_EMAIL=… DEMO_EDITOR_PASSWORD=… npm run screenshots
 ```
 
-The script shows the live API address instead of the stand-in's and the public demo's address (`SITE_URL`) instead of the local one.
+The script shows the live API address instead of the stand-in's and the public demo's address (`SITE_URL`) instead of the local one (the ping address included). Point `SUPERTEXT_REPORT_URL` at the stand-in, so taking screenshots never reports to Supertext's center.
 
 ## Code quality and security checks
 
@@ -225,6 +243,7 @@ Submitting the package to Packagist is planned.
 
 ## Known limitations / roadmap
 
+- No settings form: the API key and settings live in the environment and YAML, so the key is checked on back-end requests when it changed, not on save.
 - Translation runs inside the editor's request (one locale after the other, up to `timeout` each). Planned: a queued job and a batch action for several pages.
 - Pages (`SiteTree`) only; Fluent-localised DataObjects in ModelAdmin are not offered yet.
 - Elemental with *indirect* localisation (a separate block area per locale) is not supported.

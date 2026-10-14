@@ -8,16 +8,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - French and Italian interface, and German where it was missing: messages from Supertext (limit reached, authentication failed, timeouts and others) now appear in the user's interface language too. The "no API key" and "authentication failed" messages now also link to Supertext account sign-up.
 - The **Supertext** CMS section shows the installed plugin version under *Connection*, linked to its GitHub release notes for released versions.
+- Automatic API key check: when the key in `SUPERTEXT_API_KEY` is new or changed, on *Test connection*, in `supertext-check` and when Supertext rejects the key during a translation. The Supertext section shows the latest result with its time (*the connection works*, *rejected*, *no key*, *Supertext can't be reached*, *error*, with the account and API key links where they help) in English, German, French and Italian. *Test connection* now shows that result.
+- *Send version information to Supertext* (on by default; `version_reports: false` in YAML or `SUPERTEXT_VERSION_REPORTS=0` turns it off): after an update and when the key check result changes, the module sends the site URL, the module, Silverstripe CMS, PHP and SDK versions, whether a key is set, the key check result and the ping address to Supertext. No content, no API key and no personal data. Shown in the Supertext section; `supertext-check` sends a `check` report.
+- Public ping endpoint `/supertext/ping` that only echoes Supertext's challenge, so Supertext can check the site is reachable (404 with version reports off).
+- New table `SupertextState` for this state (run `sake db:build` after updating).
 
 ### Changed
 
-- All Supertext API calls now go through the official Supertext PHP SDK, bundled with the module (nothing extra to install). Behaviour stays the same.
+- **Languages are no longer guessed.** A locale that is a Supertext code (`de_CH`, `fr_CH`, `en_US`, `nl`, apart from case and `_`/`-`) is sent as that code; every other locale needs its *Supertext language* (Locales admin), which is now a list of Supertext's languages instead of a text field. The default regions are gone: they were wrong for most languages (Supertext wants `es`, `sl`, `nl` without region, `zh-Hans` instead of `zh-CN`). A locale without a Supertext language gets the message *has no Supertext language yet* (four languages) and nothing is sent for it; the Supertext section marks it *Not mapped*, the Supertext tab greys it out. The *Supertext language* serves as target and (without region) as source.
+- Formal/informal for a language Supertext offers no tone for (English, Swiss German, Romansh, Albanian, Serbian) is flagged on the locale and in the Supertext section, and translating into it fails with *Supertext offers no formal or informal tone for this language* instead of sending it.
+- All Supertext API calls now go through the official Supertext PHP SDK (0.2.1), bundled with the module (nothing extra to install).
 - An unsupported language pair now has its own message, naming the codes ("Supertext does not support this language pair (en → xx-YY)"), in English, German, French and Italian.
-
-### Fixed
-
-- Language codes with a variant or extension, e.g. a *Supertext language* `de-DE-1996` or `en-US-x-twain`, are now sent to Supertext as `de-DE` / `en-US` (Supertext rejected them).
-- Target locales without a region (e.g. `de`) and a *Supertext language* without one are now sent to Supertext as `de-DE` (`fr` → `fr-FR`, `en` → `en-US`, …); Supertext rejected them with "invalid language pair". A *Supertext language* such as `de_ch` is normalized to `de-CH`. The source language is sent without region, as before.
 
 ## 0.1.0 — 2026-10-07
 

@@ -9,8 +9,9 @@ Open a page, go to the **Supertext** tab, tick the locales and click **Translate
 - Elemental blocks (localised with Fluent) are translated with the page
 - Translated URL segments for new locales
 - Locales with their own content are kept unless the editor explicitly overwrites them
-- Formal or informal tone and custom Supertext language codes per locale, in the Locales admin
-- A Supertext section with *Test connection* and a translation log; tasks for scripts
+- Formal or informal tone and the Supertext language per locale (chosen from Supertext's own list, never guessed), in the Locales admin
+- A Supertext section with the automatic API key check, *Test connection* and a translation log; tasks for scripts
+- Optional version information to Supertext (on by default, no content or personal data; [details](docs/INSTALLATION.md#version-information-and-the-api-key-check))
 
 ![The Supertext tab of a page in the Silverstripe CMS](docs/images/01-supertext-tab.png)
 
