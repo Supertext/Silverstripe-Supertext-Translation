@@ -9,7 +9,7 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Security\PermissionProvider;
 use Supertext\Silverstripe\Api\LanguageCodes;
 use Supertext\Silverstripe\Api\SupertextClient;
-use Supertext\Silverstripe\Sdk\V1\InstallationReporter;
+use Supertext\Silverstripe\PluginHealth\InstallationReporter;
 use TractorCow\Fluent\Model\Locale;
 
 /**

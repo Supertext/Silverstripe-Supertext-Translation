@@ -10,8 +10,8 @@ use SilverStripe\Core\Injector\Injector;
 use Supertext\Silverstripe\Api\CallableTransport;
 use Supertext\Silverstripe\Api\Reporting;
 use Supertext\Silverstripe\PluginVersion;
-use Supertext\Silverstripe\Sdk\V1\ApiKeyCheck;
-use Supertext\Silverstripe\Sdk\V1\ReporterResult;
+use Supertext\Silverstripe\PluginHealth\KeyCheck;
+use Supertext\Silverstripe\PluginHealth\ReporterResult;
 use Supertext\Silverstripe\Supertext;
 
 /**
@@ -110,7 +110,7 @@ final class Reports
     }
 
     /** "Test connection": checks the key now. */
-    public static function testConnection(): ?ApiKeyCheck
+    public static function testConnection(): ?KeyCheck
     {
         $result = self::run(Reporting::TEST_CONNECTION);
 
@@ -118,7 +118,7 @@ final class Reports
     }
 
     /** The check task: the key check and a `check` report now (if reports are on). */
-    public static function reportCheck(): ?ApiKeyCheck
+    public static function reportCheck(): ?KeyCheck
     {
         $check = self::testConnection();
         self::run(Reporting::REPORT_CHECK);
@@ -126,7 +126,7 @@ final class Reports
         return $check;
     }
 
-    public static function lastCheck(): ?ApiKeyCheck
+    public static function lastCheck(): ?KeyCheck
     {
         try {
             return self::reporting()->lastCheck();
@@ -174,10 +174,10 @@ final class Reports
     }
 
     /** The key check without the store (only if the store failed). */
-    private static function fallbackCheck(): ?ApiKeyCheck
+    private static function fallbackCheck(): ?KeyCheck
     {
         try {
-            return Supertext::singleton()->client()->checkApiKey();
+            return KeyCheck::from(Supertext::singleton()->client()->checkApiKey());
         } catch (\Throwable) {
             return null;
         }

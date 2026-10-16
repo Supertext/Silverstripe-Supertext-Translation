@@ -8,18 +8,23 @@
 
 namespace Supertext\Silverstripe\Api;
 
+use Supertext\Silverstripe\PluginHealth\CallableKeyChecker;
+use Supertext\Silverstripe\PluginHealth\InstallationReporter;
+use Supertext\Silverstripe\PluginHealth\KeyCheck;
+use Supertext\Silverstripe\PluginHealth\PingResponse;
+use Supertext\Silverstripe\PluginHealth\ReporterResult;
+use Supertext\Silverstripe\PluginHealth\ReporterState;
 use Supertext\Silverstripe\Sdk\Http\HttpTransport;
-use Supertext\Silverstripe\Sdk\V1\ApiKeyCheck;
-use Supertext\Silverstripe\Sdk\V1\InstallationReporter;
-use Supertext\Silverstripe\Sdk\V1\PingResponse;
-use Supertext\Silverstripe\Sdk\V1\ReporterResult;
-use Supertext\Silverstripe\Sdk\V1\ReporterState;
+use Supertext\Silverstripe\Sdk\Supertext;
+use Supertext\Silverstripe\Sdk\V1\Client;
+use Supertext\Silverstripe\Sdk\V1\Protocol;
 
 /**
  * Version reports to the Supertext Commando Center, the automatic API key check and the callback
  * ping (Commando-Center-Supertext-Translation → docs/DEVELOPER.md → Report protocol). The protocol
- * is the SDK's InstallationReporter; this class only loads and stores its state and makes sure
- * nothing here ever throws into a request, a save or a translation.
+ * is Supertext Plugin Health's InstallationReporter (bundled in lib/supertext-plugin-health), the
+ * key check is the SDK's Client::checkApiKey(); this class only wires them together, loads and
+ * stores the state and makes sure nothing here ever throws into a request, a save or a translation.
  *
  * Has no Silverstripe dependencies: Service\Reports supplies the site URL, the versions, the
  * state store and the HTTP transport.
@@ -42,7 +47,8 @@ final class Reporting
     /**
      * @param bool                         $enabled   InstallationReporter::reportsEnabled() of the setting and the environment
      * @param string                       $siteUrl   the site's base URL
-     * @param string|null                  $reportUrl where reports go (SUPERTEXT_REPORT_URL); null: the SDK's default
+     * @param HttpTransport|null           $transport the SDK's HTTP transport, for the key check and the reports
+     * @param string|null                  $reportUrl where reports go (SUPERTEXT_REPORT_URL); null: Plugin Health's default
      * @param (callable(float): void)|null $sleep     tests: the key check's 429 waits
      */
     public function __construct(
@@ -78,11 +84,26 @@ final class Reporting
             pluginName: self::PLUGIN_NAME,
             pluginVersion: $this->pluginVersion,
             systemName: self::SYSTEM_NAME,
+            keyChecker: new CallableKeyChecker(
+                fn (#[\SensitiveParameter] string $key) => $this->client($key)->checkApiKey(),
+                [Protocol::class, 'apiKeyFingerprint'],
+            ),
             systemVersion: $this->systemVersion,
+            sdkVersion: Supertext::SDK_VERSION,
             callbackUrl: self::callbackUrl($this->siteUrl),
             reportUrl: $this->reportUrl,
+            transport: $this->transport !== null ? new PluginHealthTransport($this->transport) : null,
+        );
+    }
+
+    /** The SDK client for the key check: the configured endpoint and transport, User-Agent "<plugin>/<version>". */
+    private function client(#[\SensitiveParameter] string $apiKey): Client
+    {
+        return new Client(
+            $apiKey,
+            baseUrl: $this->apiBaseUrl,
+            userAgent: self::PLUGIN_NAME . '/' . $this->pluginVersion,
             transport: $this->transport,
-            apiBaseUrl: $this->apiBaseUrl,
             sleep: $this->sleep,
         );
     }
@@ -117,7 +138,7 @@ final class Reporting
     }
 
     /** The latest stored key check (for the Supertext section), null if none or unreadable. */
-    public function lastCheck(): ?ApiKeyCheck
+    public function lastCheck(): ?KeyCheck
     {
         try {
             return ReporterState::from($this->store->load())->keyCheck;

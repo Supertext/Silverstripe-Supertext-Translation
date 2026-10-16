@@ -6,9 +6,12 @@ use PHPUnit\Framework\TestCase;
 use Supertext\Silverstripe\Api\CallableTransport;
 use Supertext\Silverstripe\Api\Reporting;
 use Supertext\Silverstripe\Api\StateStore;
+use Supertext\Silverstripe\Sdk\Supertext;
+use Supertext\Silverstripe\Sdk\V1\Protocol;
 
 /**
- * The module's Commando Center glue: the SDK's InstallationReporter with the module's state store,
+ * The module's Commando Center glue: Supertext Plugin Health's InstallationReporter with the SDK's
+ * key check and the module's state store,
  * against a fake Supertext API and a fake center (never the live ones).
  */
 final class ReportingTest extends TestCase
@@ -16,7 +19,7 @@ final class ReportingTest extends TestCase
     private const KEY = 'secret-test-key-123';
     private const CENTER = 'https://center.test/api/v1/report';
 
-    /** @var list<array{method: string, url: string, body: ?string, timeout: float}> */
+    /** @var list<array{method: string, url: string, headers: array<string, string>, body: ?string, timeout: float}> */
     private array $calls = [];
 
     private int $apiStatus = 200;
@@ -31,7 +34,7 @@ final class ReportingTest extends TestCase
     private function reporting(bool $enabled = true, string $version = '0.3.0', ?StateStore $store = null): Reporting
     {
         $transport = new CallableTransport(function (string $method, string $url, array $headers, ?string $body, float $timeout): array {
-            $this->calls[] = compact('method', 'url', 'body', 'timeout');
+            $this->calls[] = compact('method', 'url', 'headers', 'body', 'timeout');
             if ($url === self::CENTER) {
                 return ['status' => 202, 'body' => '{"ok":true}'];
             }
@@ -76,6 +79,7 @@ final class ReportingTest extends TestCase
         self::assertSame('ok', $result->check?->status);
         self::assertSame('GET', $this->calls[0]['method']);
         self::assertSame('https://api.test/v1/features', $this->calls[0]['url']);
+        self::assertStringContainsString('Silverstripe-Supertext-Translation/0.3.0', $this->calls[0]['headers']['User-Agent'] ?? '');
 
         $report = $this->reports()[0];
         self::assertSame('installed', $report['event']);
@@ -86,6 +90,7 @@ final class ReportingTest extends TestCase
         self::assertSame(['url' => 'https://cms.example.ch/supertext/ping'], $report['callback']);
         self::assertTrue($report['api_key_configured']);
         self::assertSame('ok', $report['api_key_check']['status']);
+        self::assertSame(Supertext::SDK_VERSION, $report['sdk_version']);
         self::assertSame(3.0, end($this->calls)['timeout'], 'reports wait at most 3 s');
 
         // Never the key, not even in the stored state.
@@ -188,6 +193,24 @@ final class ReportingTest extends TestCase
         $result = $this->reporting()->run(Reporting::ON_REQUEST, self::KEY);
 
         self::assertSame('installed', $result?->event);
+    }
+
+    public function testAStateStoredByTheSdk02ReporterIsKept(): void
+    {
+        $this->store->json = (string) json_encode([
+            'reportedVersions' => '0.3.0|6.1.0|' . PHP_VERSION,
+            'reportedKeyStatus' => 'ok',
+            'lastFailureAt' => null,
+            'keyCheck' => ['status' => 'ok', 'checkedAt' => '2026-10-13T08:00:00Z', 'httpStatus' => 200, 'errorCode' => null, 'fingerprint' => Protocol::apiKeyFingerprint(self::KEY)],
+        ], JSON_UNESCAPED_SLASHES);
+        $stored = $this->store->json;
+
+        $result = $this->reporting()->run(Reporting::ON_REQUEST, self::KEY);
+
+        self::assertNull($result?->event, 'no new installed report');
+        self::assertSame([], $this->calls);
+        self::assertSame($stored, $this->store->json, 'same storage format');
+        self::assertSame('2026-10-13T08:00:00Z', $this->reporting()->lastCheck()?->checkedAt);
     }
 
     public function testPingAnswers(): void

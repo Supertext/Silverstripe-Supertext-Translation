@@ -7,7 +7,7 @@ if (is_file(__DIR__ . '/../vendor/autoload.php')) {
 }
 
 spl_autoload_register(static function (string $class): void {
-    foreach (['Supertext\\Silverstripe\\Tests\\' => __DIR__ . '/', 'Supertext\\Silverstripe\\Sdk\\' => __DIR__ . '/../lib/supertext-sdk/src/', 'Supertext\\Silverstripe\\' => __DIR__ . '/../src/'] as $prefix => $dir) {
+    foreach (['Supertext\\Silverstripe\\Tests\\' => __DIR__ . '/', 'Supertext\\Silverstripe\\Sdk\\' => __DIR__ . '/../lib/supertext-sdk/src/', 'Supertext\\Silverstripe\\PluginHealth\\' => __DIR__ . '/../lib/supertext-plugin-health/src/', 'Supertext\\Silverstripe\\' => __DIR__ . '/../src/'] as $prefix => $dir) {
         if (str_starts_with($class, $prefix)) {
             $file = $dir . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
             if (is_file($file)) {

@@ -5,7 +5,7 @@ namespace Supertext\Silverstripe\Task;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\PolyExecution\PolyOutput;
 use Supertext\Silverstripe\PluginVersion;
-use Supertext\Silverstripe\Sdk\V1\ApiKeyCheck;
+use Supertext\Silverstripe\PluginHealth\KeyCheck;
 use Supertext\Silverstripe\Service\Messages;
 use Supertext\Silverstripe\Service\Reports;
 use Supertext\Silverstripe\Supertext;
@@ -47,7 +47,7 @@ class CheckTask extends BuildTask
             return Command::FAILURE;
         }
         $message = Messages::keyCheck($check, false);
-        if ($check->status !== ApiKeyCheck::OK) {
+        if ($check->status !== KeyCheck::OK) {
             $output->writeln('<error>' . $message . '</error>');
 
             return Command::FAILURE;

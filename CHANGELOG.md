@@ -15,6 +15,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- Version reports, the API key check result and the reachability ping now use Supertext Plugin Health 0.1.0 (bundled in `lib/supertext-plugin-health`); Supertext SDK updated to 0.3.0. No change for sites: settings and stored state stay as they are.
 - **Languages are no longer guessed.** A locale that is a Supertext code (`de_CH`, `fr_CH`, `en_US`, `nl`, apart from case and `_`/`-`) is sent as that code; every other locale needs its *Supertext language* (Locales admin), which is now a list of Supertext's languages instead of a text field. The default regions are gone: they were wrong for most languages (Supertext wants `es`, `sl`, `nl` without region, `zh-Hans` instead of `zh-CN`). A locale without a Supertext language gets the message *has no Supertext language yet* (four languages) and nothing is sent for it; the Supertext section marks it *Not mapped*, the Supertext tab greys it out. The *Supertext language* serves as target and (without region) as source.
 - Formal/informal for a language Supertext offers no tone for (English, Swiss German, Romansh, Albanian, Serbian) is flagged on the locale and in the Supertext section, and translating into it fails with *Supertext offers no formal or informal tone for this language* instead of sending it.
 - All Supertext API calls now go through the official Supertext PHP SDK (0.2.1), bundled with the module (nothing extra to install).

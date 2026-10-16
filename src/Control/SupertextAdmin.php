@@ -17,7 +17,7 @@ use SilverStripe\ORM\FieldType\DBDatetime;
 use Supertext\Silverstripe\Api\LanguageCodes;
 use Supertext\Silverstripe\Model\TranslationLog;
 use Supertext\Silverstripe\PluginVersion;
-use Supertext\Silverstripe\Sdk\V1\ApiKeyCheck;
+use Supertext\Silverstripe\PluginHealth\KeyCheck;
 use Supertext\Silverstripe\Service\Messages;
 use Supertext\Silverstripe\Service\Reports;
 use Supertext\Silverstripe\Supertext;
@@ -88,7 +88,7 @@ class SupertextAdmin extends ModelAdmin
         // The automatic key check (cost-free): stored, shown in the Connection section, reported if it changed.
         $check = Reports::testConnection();
         $message = $check !== null ? Messages::keyCheck($check, false) : Messages::noApiKey();
-        $status = $check?->status === ApiKeyCheck::OK ? 200 : 400;
+        $status = $check?->status === KeyCheck::OK ? 200 : 400;
 
         $response = $status === 200
             ? $this->getResponseNegotiator()->respond($this->getRequest())
@@ -143,7 +143,7 @@ class SupertextAdmin extends ModelAdmin
     }
 
     /** The latest key check with its time, or "not checked yet". */
-    private function keyCheckHtml(?ApiKeyCheck $check): string
+    private function keyCheckHtml(?KeyCheck $check): string
     {
         if ($check === null) {
             return _t(self::class . '.NOT_CHECKED', 'Not checked yet. Test connection checks the key now.');
@@ -153,7 +153,7 @@ class SupertextAdmin extends ModelAdmin
 
         return sprintf(
             '<span class="%s">%s</span><br><small>%s</small>',
-            $check->status === ApiKeyCheck::OK ? 'supertext-ok' : 'supertext-warning',
+            $check->status === KeyCheck::OK ? 'supertext-ok' : 'supertext-warning',
             Messages::keyCheck($check),
             _t(self::class . '.CHECKED_AT', 'checked {time}', ['time' => Convert::raw2xml($when)])
         );

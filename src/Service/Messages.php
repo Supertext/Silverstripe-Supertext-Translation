@@ -10,7 +10,7 @@ namespace Supertext\Silverstripe\Service;
 
 use SilverStripe\Core\Convert;
 use Supertext\Silverstripe\Api\SupertextException;
-use Supertext\Silverstripe\Sdk\V1\ApiKeyCheck;
+use Supertext\Silverstripe\PluginHealth\KeyCheck;
 
 /** Shows errors from the API client (which only speaks English) in the CMS user's language. */
 final class Messages
@@ -58,13 +58,13 @@ final class Messages
      * Center's guide). $html: escaped, "supertext.com" and "supertext.com → Integrations → API" as links
      * opening in a new tab; otherwise plain text with the bare URLs.
      */
-    public static function keyCheck(ApiKeyCheck $check, bool $html = true): string
+    public static function keyCheck(KeyCheck $check, bool $html = true): string
     {
         $text = match ($check->status) {
-            ApiKeyCheck::OK => _t(self::class . '.KEYCHECK_OK', 'API key checked: the connection to Supertext works.'),
-            ApiKeyCheck::INVALID => _t(self::class . '.KEYCHECK_INVALID', 'Supertext rejected the API key. Check that you copied the whole key, or generate a new one at supertext.com → Integrations → API (requires the Admin role). No Supertext account yet? Create one at supertext.com.'),
-            ApiKeyCheck::MISSING => _t(self::class . '.KEYCHECK_MISSING', 'No API key is set yet. No Supertext account yet? Create one at supertext.com. Generate your API key at supertext.com → Integrations → API (requires the Admin role).'),
-            ApiKeyCheck::UNREACHABLE => _t(self::class . '.KEYCHECK_UNREACHABLE', 'The API key couldn\'t be checked because Supertext can\'t be reached. The settings are saved; check again later.'),
+            KeyCheck::OK => _t(self::class . '.KEYCHECK_OK', 'API key checked: the connection to Supertext works.'),
+            KeyCheck::INVALID => _t(self::class . '.KEYCHECK_INVALID', 'Supertext rejected the API key. Check that you copied the whole key, or generate a new one at supertext.com → Integrations → API (requires the Admin role). No Supertext account yet? Create one at supertext.com.'),
+            KeyCheck::MISSING => _t(self::class . '.KEYCHECK_MISSING', 'No API key is set yet. No Supertext account yet? Create one at supertext.com. Generate your API key at supertext.com → Integrations → API (requires the Admin role).'),
+            KeyCheck::UNREACHABLE => _t(self::class . '.KEYCHECK_UNREACHABLE', 'The API key couldn\'t be checked because Supertext can\'t be reached. The settings are saved; check again later.'),
             default => _t(self::class . '.KEYCHECK_ERROR', 'The API key couldn\'t be checked: Supertext answered with an error ({status}). The settings are saved; check again later.', ['status' => (string) ($check->httpStatus ?? $check->errorCode ?? '')]),
         };
 

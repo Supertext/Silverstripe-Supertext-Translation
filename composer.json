@@ -34,6 +34,7 @@
         "psr-4": {
             "Supertext\\Silverstripe\\": "src/",
             "Supertext\\Silverstripe\\Sdk\\": "lib/supertext-sdk/src/",
+            "Supertext\\Silverstripe\\PluginHealth\\": "lib/supertext-plugin-health/src/",
             "Supertext\\Silverstripe\\Tests\\": "tests/"
         }
     },
