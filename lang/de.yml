@@ -31,16 +31,17 @@ de:
     TIMEOUT: 'Zeitlimit pro Sprache'
     VERSION: Plugin-Version
   Supertext\Silverstripe\Extension\LocaleExtension:
-    AUTO: 'Wie die Sprache: {code}'
+    CHOOSE: '— bitte wählen —'
     CODE: Supertext-Sprache
-    CODE_HELP: 'Die Supertext-Sprache, in die und aus der diese Sprache übersetzt wird. Supertext akzeptiert nur seine eigenen Codes: Wählen Sie einen, wenn die Sprache keiner davon ist (z. B. de → German (Switzerland), es_ES → Spanish).'
+    CODE_HELP: 'Die Supertext-Sprache, in die und aus der diese Sprache übersetzt wird. Lassen Sie «Standard» stehen, um die vorgeschlagene zu verwenden; wählen Sie eine andere, wenn Sie eine andere Variante brauchen (z. B. de → Deutsch (Schweiz)). Sprachen ohne Standard (z. B. en_IE, gsw) brauchen eine Supertext-Sprache.'
     DEFAULT: Standard
     FORMAL: 'Formell (Sie, vous)'
     INFORMAL: 'Informell (du, tu)'
-    NONE: 'Nicht zugeordnet: Wählen Sie eine Supertext-Sprache'
+    INVALID: '{code} ist keine Supertext-Sprache.'
     NO_POLITENESS: 'Supertext bietet für {code} keine formelle oder informelle Anrede an: Lassen Sie hier «Standard» stehen, sonst schlagen Übersetzungen in diese Sprache fehl.'
     POLITENESS: Anrede
     POLITENESS_HELP: 'Wie Supertext die Leserinnen und Leser in dieser Sprache anspricht.'
+    SUGGESTED: 'Standard: {language}'
     UNKNOWN: '{code} (nicht in der Liste von Supertext)'
     db_SupertextCode: Supertext-Code
     db_SupertextPoliteness: Supertext-Anrede

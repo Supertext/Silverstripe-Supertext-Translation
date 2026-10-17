@@ -9,7 +9,7 @@ The Supertext tab and its messages appear in your CMS interface language (Englis
 1. In **Pages**, choose the locale you translate **from** with the locale switcher at the top of the CMS menu (usually English), and open the page.
 2. Save your changes first. Supertext translates the saved draft.
 3. Open the **Supertext** tab.
-4. Under **Into**, tick the locales to create. Locales where the page doesn't exist yet are ticked. A greyed-out locale marked **No Supertext language** can't be translated yet: your administrator needs to choose its Supertext language under *Locales*.
+4. Under **Into**, tick the locales to create. Locales where the page doesn't exist yet are ticked. A greyed-out locale marked **No Supertext language** can't be translated yet: your administrator needs to choose its Supertext language under *Locales* → the locale (most locales have a default; only ones like `en_IE` or `gsw` need it).
 5. Click **Translate**.
 
 ![The Supertext tab of the page "Swiss chocolate" in English: Into Deutsch, Français and Italiano (all ticked) and the Translate button](images/01-supertext-tab.png)

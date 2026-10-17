@@ -67,7 +67,7 @@ Check it under **Supertext → Test connection** (administrators) or with `vendo
 
 ## Locales
 
-The module translates between your Fluent locales (**Locales** in the CMS menu). Each locale needs a **Supertext language**, and Supertext accepts exactly these codes (its own language list, October 2026):
+The module translates between your Fluent locales (**Locales** in the CMS menu). Each locale has a **Supertext language** (a combo box on the locale), and Supertext accepts exactly these codes (its own language list, October 2026):
 
 | Language | Supertext codes |
 | --- | --- |
@@ -76,8 +76,20 @@ The module translates between your Fluent locales (**Locales** in the CMS menu).
 | Swiss German | `gsw-u-sd-chzh` (Zurich), `gsw-u-sd-chbe` (Bern) |
 | All others, without region | `bg`, `cs`, `da`, `el`, `es`, `fi`, `hr`, `hu`, `ja`, `ko`, `nb`, `nl`, `pl`, `rm`, `ru`, `sk`, `sl`, `sq`, `sv`, `tr` |
 
-- A locale that **is** one of these codes (apart from upper/lower case and `_`/`-`) needs nothing: `de_CH` → `de-CH`, `fr_CH` → `fr-CH`, `en_US` → `en-US`, `nl` → `nl`.
-- **Every other locale needs its Supertext language set**: `de` (which German?), `es_ES` (→ `es`), `zh_CN` (→ `zh-Hans`), `nb_NO` (→ `nb`). The module never guesses a region: a locale without a Supertext language can't be translated into or from. The Supertext tab shows it greyed out with *No Supertext language*, and the Supertext section marks it *Not mapped*.
+Which code a locale uses:
+
+1. The locale's **Supertext language**, if you chose one.
+2. Else the code that **is** the locale (apart from upper/lower case and `_`/`-`): `de_CH` → `de-CH`, `fr_CH` → `fr-CH`, `en_US` → `en-US`, `nl` → `nl`.
+3. Else the **default**, where it is obvious:
+
+   | Locale | Default |
+   | --- | --- |
+   | `de`, `en`, `fr`, `it`, `pt` | `de-DE`, `en-US`, `fr-FR`, `it-IT`, `pt-PT` |
+   | `zh`, `zh_CN`, `zh_SG` / `zh_TW`, `zh_HK`, `zh_MO` | `zh-Hans` / `zh-Hant` |
+   | `sr`, `sr_Latn_RS` / `sr_Cyrl_RS` | `sr-Latn` / `sr-Cyrl` |
+   | a region of a language Supertext has without region | that language: `es_ES`, `es_419` → `es`, `nl_NL` → `nl`, `nb_NO` → `nb`, `sl_SI` → `sl` |
+
+4. Else the locale **has no Supertext language** and can't be translated into or from until you choose one: no region is guessed, so `en_IE`, `de_LI`, `fr_BE`, `sr_RS`, `gsw` and `no` need one. The Supertext tab shows such a locale greyed out with *No Supertext language*, and the Supertext section marks it *Not mapped*.
 - As the source, the locale is sent without region (`en_US` → `en`, `de_CH` → `de`); the same Supertext language serves both directions.
 - Use regional locales where they matter: `de-CH` writes "ss" instead of "ß".
 
@@ -85,8 +97,10 @@ The module translates between your Fluent locales (**Locales** in the CMS menu).
 
 Open a locale to set its two Supertext fields:
 
-- **Supertext language**: a list of every Supertext language with its code. The first entry, *Same as the locale: de-CH*, uses the code that equals the locale; it reads *Not mapped: choose a Supertext language* when the locale isn't a Supertext code. A code set before (e.g. by an older version of the module) that isn't in the list stays selectable and is sent as it is.
-- **Form of address**: *Formal (Sie, vous)*, *Informal (du, tu)* or *Default*. Supertext doesn't offer it for English, Swiss German, Romansh, Albanian and Serbian: the field then says so, the Supertext section shows a warning, and translations into that locale fail with *Supertext offers no formal or informal tone for this language* until you set it back to *Default*.
+- **Supertext language**: a combo box with every Supertext language, by name (in your CMS interface language) and code, e.g. *German (Switzerland) (de-CH)*. The first entry, *Default: German (Germany) (de-DE)*, is the suggestion from the list above and is what an unchanged locale uses; it reads *— choose —* when the locale has no default. Choose another entry to use a different variant (e.g. `de` → *German (Switzerland)*). Only Supertext's codes can be saved. A code set before (e.g. by an older version of the module) that isn't in the list stays selectable and is sent as it is.
+- **Form of address**: *Formal (Sie, vous)*, *Informal (du, tu)* or *Default*. Shown only for Supertext languages that offer it (not for English, Swiss German, Romansh, Albanian and Serbian; after changing the Supertext language, save to see it). If one was set before for such a language, the field stays, says so, the Supertext section shows a warning, and translations into that locale fail with *Supertext offers no formal or informal tone for this language* until you set it back to *Default*.
+
+**Updating from an older version:** run `sake db:build`. Supertext languages already set stay as they are; codes saved in another spelling (`de_ch`) are rewritten in Supertext's (`de-CH`), so the combo box shows them. Locales that had none now use the default from the list above.
 
 ![The two Supertext fields of the locale Deutsch: Supertext language and Form of address (Formal)](images/08-locale-settings.png)
 
@@ -128,7 +142,7 @@ Supertext\Silverstripe\Service\Translator:
 | `Translator.exclude_fields` | `URLSegment`, `ExtraMeta`, `ReportClass`, `ExtraClass`, `Style` | Localised fields that are never translated. |
 | `Translator.max_depth` | `5` | How deep owned objects (area → blocks → nested blocks) are followed. |
 | `<YourClass>.supertext_exclude_fields` | – | Per class: more fields not to translate. |
-| Locale → *Supertext language* | the Supertext code equal to the locale, if any | The language mapping: the Supertext code for that locale, as target and (without region) as source. Needed for every locale that isn't itself a Supertext code. |
+| Locale → *Supertext language* | *Default*: the Supertext code equal to the locale, else the default (`de` → `de-DE`, `es_ES` → `es`) | The language mapping, a combo box of Supertext's codes: the Supertext code for that locale, as target and (without region) as source. Needed for locales without a default (`en_IE`, `gsw`). |
 | Locale → *Form of address* | Default | Formal or informal tone for that locale. |
 
 ### What is translated
@@ -180,7 +194,7 @@ Translating runs in the editor's request: a few seconds per locale, up to `timeo
 | *This page has no content of its own in … yet* | The page was never saved in the locale you're in. Switch to the locale it was written in. |
 | *You are not allowed to edit this page in …* | Page permissions, or Fluent locale permissions that don't include that locale. |
 | *Authentication failed. Please check the Supertext API key.* | Wrong or revoked key, or a key for another environment. Use *Test connection*; generate a new key at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api) (Admin role). |
-| *The language … has no Supertext language yet* / *Not mapped* in the Supertext section / *No Supertext language* on the tab | The locale isn't a Supertext code and has no *Supertext language*. Set one under **Locales** (see [Locales](#locales)). |
+| *The language … has no Supertext language yet* / *Not mapped* in the Supertext section / *No Supertext language* on the tab | The locale isn't a Supertext code, has no default (e.g. `en_IE`, `gsw`) and no *Supertext language*. Choose one in its combo box under **Locales** → the locale (see [Locales](#locales)). |
 | *Supertext does not support this language pair (en → xx-YY)* | The locale's *Supertext language* is a code Supertext doesn't offer (e.g. `es-ES` instead of `es`, set by an older version), or the same language as the source. Choose a code from the list; the message shows the codes that were sent. |
 | *Supertext offers no formal or informal tone for this language* | *Form of address* is Formal or Informal for a language without it (English, Swiss German, Romansh, Albanian, Serbian). Set it to *Default*. |
 | *Supertext rejected the API key* under *API key check* | The key is wrong or revoked. Check that the whole key was copied into `SUPERTEXT_API_KEY`, or generate a new one at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api) (Admin role). No Supertext account yet? [Create one](https://www.supertext.com/person/en/account/signin). Then *Test connection*. |
