@@ -132,11 +132,12 @@ async function translatePage(p, label, overwrite) {
 }
 
 // --- Log in as the editor ----------------------------------------------------------------
-await page.goto(`${B}/Security/login`);
+await page.goto(`${B}/Security/login?BackURL=${encodeURIComponent('/admin/pages/')}`);
 await page.fill('input[name=Email]', need('EDITOR_EMAIL'));
 await page.fill('input[name=Password]', need('EDITOR_PASSWORD'));
-await Promise.all([page.waitForNavigation(), page.click('[type=submit]')]);
-if (!check('editor can log in (DEMO_EDITOR_*)', !page.url().includes('/Security/login'))) {
+await page.click('[type=submit]');
+await page.waitForURL(/\/admin\//, { timeout: 30_000 }).catch(() => {});
+if (!check('editor can log in (DEMO_EDITOR_*)', new URL(page.url()).pathname.startsWith('/admin/'), page.url())) {
 	await page.screenshot({ path: `${artifacts}login.png` });
 	throw new Error(failures.join('\n'));
 }
