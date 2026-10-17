@@ -135,7 +135,7 @@ final class LanguageCodes
             return $english;
         }
         $name = \Locale::getDisplayName(str_replace('-', '_', $code), str_replace('-', '_', $displayLocale));
-        if (!is_string($name) || $name === '' || strcasecmp($name, $code) === 0 || strcasecmp($name, str_replace('-', '_', $code)) === 0) {
+        if (!is_string($name) || strcasecmp($name, $code) === 0 || strcasecmp($name, str_replace('-', '_', $code)) === 0) {
             return $english;
         }
 
