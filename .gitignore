@@ -12,3 +12,5 @@
 .env
 /.phpunit.result.cache
 /.phpstan-cache/
+/tests/e2e/node_modules/
+/tests/e2e/artifacts/
