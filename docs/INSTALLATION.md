@@ -113,6 +113,10 @@ Under **Security → Groups → Permissions**, give editors:
 
 The module checks that the user may edit the page **in each target locale**. If you restrict groups to certain locales with Fluent's *Access "Deutsch" (de_CH)* permissions, editors can only translate into the locales their groups cover. *Test connection* is for administrators.
 
+### Export for translation and import
+
+*Export for translation* and *Import translation* (on the Supertext tab, see the [user guide](USER_GUIDE.md#export-for-translation-and-import-the-translated-file)) need nothing to configure and no API key: they never call the Supertext API. They use the same permissions as translating: **Translate content with Supertext**, and edit rights on the page in the source locale (export) or in the target locale (import). Uploads are limited to **10 MB** by the module; PHP's `upload_max_filesize` and `post_max_size` must allow that much. Uploaded files are read in memory and never stored. Imports are logged in the translation log (*Imported from a translation file.*).
+
 ## Settings
 
 All settings are optional and live in YAML:
@@ -205,5 +209,7 @@ Translating runs in the editor's request: a few seconds per locale, up to `timeo
 | Blocks stay in the source language | Blocks aren't localised by Fluent (see [Elemental blocks](#elemental-blocks)). |
 | A code-like field got translated | Add it to `exclude_fields` or the class's `supertext_exclude_fields`. |
 | *Your Supertext translation limit is exceeded.* | The Supertext subscription's quota is used up. |
+| *The file is too large (at most 10 MB)* on import | The file is larger than 10 MB, or than PHP's `upload_max_filesize`/`post_max_size`. |
+| *Choose a file to import.* although a file was chosen | The upload failed (PHP's upload limits or a full temporary folder). |
 
 Errors are also logged through Silverstripe's logger. More technical details are in the [developer guide](DEVELOPER.md).

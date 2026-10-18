@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Export for translation (XLIFF 1.2 or HTML) and import of translated files; Supertext SDK 0.5.0. At the bottom of the Supertext tab: download a page's texts (page fields and content blocks) for one or more locales (XLIFF) or one locale (HTML), and import the translated file as drafts in its locale, with a summary (imported, skipped because the source changed, not translated, formatting changed, not in the file). No API key needed; uploads up to 10 MB, never stored; imports appear in the translation log. All new texts in English, German, French and Italian.
 - French and Italian interface, and German where it was missing: messages from Supertext (limit reached, authentication failed, timeouts and others) now appear in the user's interface language too. The "no API key" and "authentication failed" messages now also link to Supertext account sign-up.
 - The **Supertext** CMS section shows the installed plugin version under *Connection*, linked to its GitHub release notes for released versions.
 - Automatic API key check: when the key in `SUPERTEXT_API_KEY` is new or changed, on *Test connection*, in `supertext-check` and when Supertext rejects the key during a translation. The Supertext section shows the latest result with its time (*the connection works*, *rejected*, *no key*, *Supertext can't be reached*, *error*, with the account and API key links where they help) in English, German, French and Italian. *Test connection* now shows that result.

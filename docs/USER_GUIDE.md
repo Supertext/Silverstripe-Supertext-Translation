@@ -39,6 +39,37 @@ Locales the page already exists in show **Already translated** or **Translated w
 
 You can translate from any locale the page has its own content in, e.g. from German into French, by switching to that locale first.
 
+## Export for translation and import the translated file
+
+Instead of translating with Supertext straight away, you can download a page's texts as a file, have it translated elsewhere (a translation tool such as Trados, memoQ or Phrase, a translator, or Supertext's web app) and import the translated file again. Both are at the bottom of the **Supertext** tab. The file holds exactly the texts **Translate** would send: page fields and content blocks, in the locale you are editing.
+
+**Export for translation:**
+
+1. Open the page in the locale you want to translate from and go to the **Supertext** tab.
+2. Choose the **File format**:
+   - **XLIFF 1.2 (for translation tools)**: the better choice for translation tools and translators. Formatting (bold, links, lists) is shown as protected tags, so it can be moved but not broken. One file can hold several locales.
+   - **HTML (one language per file)**: for Supertext's web app or anyone who translates HTML files. Tick exactly one locale.
+3. Tick the locales under **Into** (locales without a Supertext language can be exported too) and click **Download file**. The file is called e.g. `silverstripe-12-de_CH.xlf` (`silverstripe-12.xlf` with several locales; `.html` for HTML).
+
+Send the file to your translator, or upload it to Supertext's web app. Whoever translates an **HTML** file must leave its `<head>` and the `data-st-id` attributes alone: the module needs them to find the page and the texts again. An HTML file can't mark a text as untranslated, so an HTML file imported unchanged writes the original (source) text into the translation.
+
+**Import translation:**
+
+1. On the **Supertext** tab of any page (the file says which page and locale it belongs to), choose the **Translated file (XLIFF or HTML)**, at most 10 MB.
+2. Tick **Also import texts whose source changed since the export** only if texts edited in the original after the export should be imported anyway (their translation may no longer fit). Off by default.
+3. Tick **Overwrite existing translations** if the page already has its own content in that locale and you want to replace it; otherwise that locale is skipped.
+4. Click **Import translation**. The translations are saved as a **draft** in their locale, like translations made with Supertext; review and publish them there. A locale the page already has keeps the texts the file doesn't translate.
+
+The summary shows, per locale:
+
+| Line | Meaning |
+| --- | --- |
+| *Imported: N* | Texts written into the draft. |
+| *Skipped, source changed since the export: N* | The original text was edited after the export. Import again with *Also import texts whose source changed since the export*, or export again. |
+| *Not translated in the file: N* | The file has no translation for these texts (e.g. left empty in the translation tool). |
+| *Formatting changed, not imported: N* | The translation broke or added formatting (tags) the original doesn't have. Fix it in the file and import again. |
+| *Not in the file: N* | Texts added to the page since the export. Export again to translate them. |
+
 ## What is translated
 
 | Content | What happens |
@@ -71,6 +102,13 @@ Empty fields are skipped.
 | *Supertext does not support this language pair (en → …).* | Supertext can't translate into this locale, or its Supertext language is wrong. Tell your administrator. |
 | *Supertext offers no formal or informal tone for this language.* | The locale's form of address can't be used with Supertext; ask your administrator to set it to *Default*. |
 | *Too many requests to Supertext. Please try again shortly.* | Supertext was busy; try again in a moment. |
+| *This file isn't a valid XLIFF or HTML translation file.* (import) | Not an XLIFF or HTML file, or damaged. |
+| *This file wasn't exported by the Supertext module, or its header was removed.* (import) | The file has no Supertext information (e.g. an HTML file whose `<head>` was removed). |
+| *The file is too large (at most 10 MB).* (import) | Split the work into smaller files. |
+| *This file belongs to another system (…).* (import) | The file was exported by a Supertext plugin for another CMS. |
+| *The page this file was exported from no longer exists.* (import) | The original page was deleted. |
+| *The site has no locale ….* (export, import) | The locale was removed (or is the locale you export from). |
+| *Nothing to translate.* (export) | The page has no text to translate in this locale. |
 | *Timed out waiting for the Supertext translation.* / *The Supertext service is currently unavailable.* | Supertext took too long or is unavailable. Try again later. |
 
 Errors are reported per locale: if one locale fails, the others are still translated.

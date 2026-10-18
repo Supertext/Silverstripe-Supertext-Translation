@@ -10,6 +10,7 @@ Open a page, go to the **Supertext** tab, tick the locales and click **Translate
 - Translated URL segments for new locales
 - Locales with their own content are kept unless the editor explicitly overwrites them
 - Formal or informal tone and the Supertext language per locale (a combo box of Supertext's own languages, with an obvious default preselected: `de` → `de-DE`), in the Locales admin
+- Export for translation (XLIFF 1.2 or HTML) for translation tools, translators or Supertext's web app, and import of the translated file as drafts
 - A Supertext section with the automatic API key check, *Test connection* and a translation log; tasks for scripts
 - Optional version information to Supertext (on by default, no content or personal data; [details](docs/INSTALLATION.md#version-information-and-the-api-key-check))
 
