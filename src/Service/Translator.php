@@ -447,7 +447,8 @@ class Translator
             $segments[$i] = ['text' => $unit['value'], 'html' => $unit['html']];
         }
 
-        return $client->translateSegments($segments, $targetCode, $sourceCode, $politeness ?: 'default');
+        // Locales with "Translation review" go through Supertext's review service (same key and protocol).
+        return $client->forReview(Supertext::review($target))->translateSegments($segments, $targetCode, $sourceCode, $politeness ?: 'default');
     }
 
     /** Writes the translations to the draft stage of the current (target) locale. */

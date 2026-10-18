@@ -8,7 +8,7 @@ For administrators and developers who install and set up the module. Editors fin
 - [Fluent](https://github.com/tractorcow-farm/silverstripe-fluent) 8 with at least two locales
 - Optional: [Elemental](https://github.com/silverstripe/silverstripe-elemental) 6, with blocks localised directly by Fluent (see [Elemental blocks](#elemental-blocks))
 - A Supertext account with an API key: [create an account or log in](https://www.supertext.com/person/en/account/signin), then [generate the key](https://www.supertext.com/en/integrations/api) (see [API key](#api-key))
-- The server must reach `https://api.supertext.com` over HTTPS
+- The server must reach `https://api.supertext.com` over HTTPS (and, for [Translation review](#translation-review), Supertext's review service)
 
 ## Install
 
@@ -20,11 +20,11 @@ vendor/bin/sake db:build --flush
 
 (Publishing to Packagist is planned; then the first line is no longer needed.)
 
-`db:build` adds the tables `SupertextTranslation` (the translation log) and `SupertextState` (the module's own state, see [Version information and the API key check](#version-information-and-the-api-key-check)) and two fields to Fluent's locales. The module adds:
+`db:build` adds the tables `SupertextTranslation` (the translation log) and `SupertextState` (the module's own state, see [Version information and the API key check](#version-information-and-the-api-key-check)) and three fields to Fluent's locales. The module adds:
 
 - a **Supertext** tab to every page in the CMS (for users with the Supertext permission),
 - a **Supertext** section in the CMS menu: connection status, the latest API key check, the installed plugin version, *Test connection* (administrators), whether version information is sent to Supertext, the locales and the translation log,
-- *Supertext language* and *Form of address* to each locale under **Locales**,
+- *Supertext language*, *Form of address* and *Translation review* to each locale under **Locales**,
 - the public route `/supertext/ping` (see [The ping endpoint](#the-ping-endpoint)),
 - the tasks `supertext-translate` and `supertext-check`.
 
@@ -44,7 +44,7 @@ composer remove supertext/silverstripe-supertext-translation
 vendor/bin/sake db:build --flush
 ```
 
-Translations already made are normal Fluent content and stay. The tables `SupertextTranslation` and `SupertextState` and the columns `SupertextCode` and `SupertextPoliteness` of `Fluent_Locale` are left in the database (Silverstripe never drops them); delete them by hand if you like.
+Translations already made are normal Fluent content and stay. The tables `SupertextTranslation` and `SupertextState` and the columns `SupertextCode`, `SupertextPoliteness` and `SupertextReview` of `Fluent_Locale` are left in the database (Silverstripe never drops them); delete them by hand if you like.
 
 ## API key
 
@@ -95,12 +95,13 @@ Which code a locale uses:
 
 ![The Locales section: English (en_US, default), Deutsch (de_CH), Français (fr_CH) and Italiano (it_CH) with their URL segments](images/07-locales.png)
 
-Open a locale to set its two Supertext fields:
+Open a locale to set its Supertext fields:
 
 - **Supertext language**: a combo box with every Supertext language, by name (in your CMS interface language) and code, e.g. *German (Switzerland) (de-CH)*. The first entry, *Default: German (Germany) (de-DE)*, is the suggestion from the list above and is what an unchanged locale uses; it reads *— choose —* when the locale has no default. Choose another entry to use a different variant (e.g. `de` → *German (Switzerland)*). Only Supertext's codes can be saved. A code set before (e.g. by an older version of the module) that isn't in the list stays selectable and is sent as it is.
 - **Form of address**: *Formal (Sie, vous)*, *Informal (du, tu)* or *Default*. Shown only for Supertext languages that offer it (not for English, Swiss German, Romansh, Albanian and Serbian; after changing the Supertext language, save to see it). If one was set before for such a language, the field stays, says so, the Supertext section shows a warning, and translations into that locale fail with *Supertext offers no formal or informal tone for this language* until you set it back to *Default*.
+- **Translation review**: on or off (off by default), see [Translation review](#translation-review).
 
-**Updating from an older version:** run `sake db:build`. Supertext languages already set stay as they are; codes saved in another spelling (`de_ch`) are rewritten in Supertext's (`de-CH`), so the combo box shows them. Locales that had none now use the default from the list above.
+**Updating from an older version:** run `sake db:build`. Supertext languages already set stay as they are; codes saved in another spelling (`de_ch`) are rewritten in Supertext's (`de-CH`), so the combo box shows them. Locales that had none now use the default from the list above. *Translation review* starts off for every locale.
 
 ![The two Supertext fields of the locale Deutsch: Supertext language and Form of address (Formal)](images/08-locale-settings.png)
 
@@ -125,6 +126,7 @@ All settings are optional and live in YAML:
 Supertext\Silverstripe\Supertext:
   environment: live          # live | staging | testing
   api_url: ''                # a different base URL; SUPERTEXT_API_URL wins
+  review_url: 'https://localizationreview-production.up.railway.app/v1/'  # '' = Translation review off everywhere
   timeout: 180               # seconds to wait for one locale
   version_reports: true      # "Send version information to Supertext"; SUPERTEXT_VERSION_REPORTS wins
 
@@ -138,7 +140,9 @@ Supertext\Silverstripe\Service\Translator:
 | `SUPERTEXT_API_KEY` (environment) | – | The Supertext API key. |
 | `SUPERTEXT_API_URL` (environment) | – | A different base URL (proxy, test server). Wins over `api_url`. |
 | `Supertext.environment` | `live` | `live` (`https://api.supertext.com/v1/`), `staging` or `testing`. |
-| `Supertext.api_url` | – | A different base URL. |
+| `Supertext.api_url` | – | A different base URL. For [Translation review](#translation-review) use the locales' checkbox instead. |
+| `Supertext.review_url` | Supertext's review service (`https://localizationreview-production.up.railway.app/v1/`) | Address of the review service for locales with *Translation review* on. `''` turns review off for every locale. Only change it when Supertext gives you another address. |
+| `SUPERTEXT_REVIEW_URL` (environment) | – | Wins over `review_url` when set and not empty. |
 | `Supertext.timeout` | `180` | Seconds to wait for the translation of one locale. |
 | `Supertext.poll_interval` | `2` | Seconds between status checks. |
 | `Supertext.version_reports` | `true` | *Send version information to Supertext* (see [below](#version-information-and-the-api-key-check)). `false` turns it off. |
@@ -148,6 +152,7 @@ Supertext\Silverstripe\Service\Translator:
 | `<YourClass>.supertext_exclude_fields` | – | Per class: more fields not to translate. |
 | Locale → *Supertext language* | *Default*: the Supertext code equal to the locale, else the default (`de` → `de-DE`, `es_ES` → `es`) | The language mapping, a combo box of Supertext's codes: the Supertext code for that locale, as target and (without region) as source. Needed for locales without a default (`en_IE`, `gsw`). |
 | Locale → *Form of address* | Default | Formal or informal tone for that locale. |
+| Locale → *Translation review* | off | Translations into that locale go through Supertext's review service (see [Translation review](#translation-review)). Field `SupertextReview` of `Fluent_Locale`. |
 
 ### What is translated
 
@@ -164,6 +169,19 @@ DNADesign\Elemental\Models\BaseElement:
 ```
 
 The module follows the objects a page *owns* (Silverstripe's `owns`), so blocks, nested blocks and other owned, localised objects are translated with the page. The *indirect* setup (a separate block area per locale) is not supported yet.
+
+## Translation review
+
+With **Translation review**, people check the translations on the website itself and correct them there: customers or Supertext linguists open the original and the translated page side by side in Chrome with the *Supertext Localization Review* extension and fix texts in a side panel. Their corrections come back into Silverstripe.
+
+Turn it on per language in the locale that is translated **into** (**Locales** → e.g. *Deutsch* → tick **Translation review** → *Save*). Untick it to turn it off again; nothing else changes.
+
+- Translations into that locale then go through Supertext's review service instead of directly to Supertext. It answers exactly like Supertext and passes everything on with your API key, so billing, languages, form of address and error messages stay the same.
+- The review service keeps every translation of your account. A text it has translated before gets the same translation again (without a new Supertext call), and once a reviewer has corrected it, the corrected text.
+- **Corrections arrive with the next translation:** after a review, translate the pages again (Supertext tab → *Translate*, with *Overwrite existing translations*) to write the corrections into Silverstripe. As always, translating again overwrites manual changes in the translated texts.
+- Reviewers get a review link for your site from Supertext; nothing to set up in Silverstripe.
+- The review service works with keys of the **live** Supertext API. With `environment: staging` or `testing`, leave review off.
+- *Export for translation* and *Import translation* don't use the review service. The automatic API key check and *Test connection* still go directly to Supertext.
 
 ## Version information and the API key check
 
@@ -200,6 +218,8 @@ Translating runs in the editor's request: a few seconds per locale, up to `timeo
 | *Authentication failed. Please check the Supertext API key.* | Wrong or revoked key, or a key for another environment. Use *Test connection*; generate a new key at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api) (Admin role). |
 | *The language … has no Supertext language yet* / *Not mapped* in the Supertext section / *No Supertext language* on the tab | The locale isn't a Supertext code, has no default (e.g. `en_IE`, `gsw`) and no *Supertext language*. Choose one in its combo box under **Locales** → the locale (see [Locales](#locales)). |
 | *Supertext does not support this language pair (en → xx-YY)* | The locale's *Supertext language* is a code Supertext doesn't offer (e.g. `es-ES` instead of `es`, set by an older version), or the same language as the source. Choose a code from the list; the message shows the codes that were sent. |
+| *Authentication failed* only for locales with *Translation review* | The review service only works with keys of the live Supertext API: with `environment: staging`/`testing` (or `api_url`) leave review off. |
+| Reviewers' corrections don't show up in Silverstripe | They arrive with the next translation: translate the pages into that locale again (with *Overwrite existing translations*). Check that the locale's *Translation review* is ticked. |
 | *Supertext offers no formal or informal tone for this language* | *Form of address* is Formal or Informal for a language without it (English, Swiss German, Romansh, Albanian, Serbian). Set it to *Default*. |
 | *Supertext rejected the API key* under *API key check* | The key is wrong or revoked. Check that the whole key was copied into `SUPERTEXT_API_KEY`, or generate a new one at [supertext.com → Integrations → API](https://www.supertext.com/en/integrations/api) (Admin role). No Supertext account yet? [Create one](https://www.supertext.com/person/en/account/signin). Then *Test connection*. |
 | *The API key couldn't be checked because Supertext can't be reached* | The web server can't reach `api.supertext.com` (firewall, proxy, DNS). Translations need the same connection. |

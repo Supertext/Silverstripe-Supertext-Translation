@@ -41,10 +41,13 @@ it:
     NO_POLITENESS: 'Supertext non offre un tono formale o informale per {code}: lasci «Predefinito», altrimenti le traduzioni in questa lingua non riescono.'
     POLITENESS: 'Forma di cortesia'
     POLITENESS_HELP: 'Come Supertext si rivolge ai lettori in questa lingua.'
+    REVIEW: 'Revisione delle traduzioni'
+    REVIEW_HELP: 'Le traduzioni in questa lingua passano dal servizio di revisione di Supertext, così i revisori possono controllarle e correggerle direttamente sul sito con l’estensione Supertext Localization Review. Le loro correzioni vengono riprese alla prossima traduzione della pagina.'
     SUGGESTED: 'Predefinita: {language}'
     UNKNOWN: '{code} (non presente nell’elenco di Supertext)'
     db_SupertextCode: 'Codice Supertext'
     db_SupertextPoliteness: 'Forma di cortesia Supertext'
+    db_SupertextReview: 'Revisione delle traduzioni Supertext'
   Supertext\Silverstripe\Extension\SupertextCMSMainExtension:
     DONE: 'Tradotto in {locales} (salvato come bozza).'
     FAILED: 'Non riuscito: {errors}'

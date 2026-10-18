@@ -41,10 +41,13 @@ fr:
     NO_POLITENESS: 'Supertext ne propose pas de ton formel ou informel pour {code} : laissez « Par défaut », sinon les traductions vers cette langue échouent.'
     POLITENESS: 'Forme d''adresse'
     POLITENESS_HELP: 'La façon dont Supertext s''adresse aux lecteurs dans cette langue.'
+    REVIEW: 'Révision des traductions'
+    REVIEW_HELP: 'Les traductions vers cette langue passent par le service de révision de Supertext, afin que les réviseurs puissent les vérifier et les corriger directement sur le site avec l’extension Supertext Localization Review. Leurs corrections sont reprises lors de la prochaine traduction de la page.'
     SUGGESTED: 'Par défaut : {language}'
     UNKNOWN: '{code} (absent de la liste de Supertext)'
     db_SupertextCode: 'Code Supertext'
     db_SupertextPoliteness: 'Forme d''adresse Supertext'
+    db_SupertextReview: 'Révision des traductions Supertext'
   Supertext\Silverstripe\Extension\SupertextCMSMainExtension:
     DONE: 'Traduit en {locales} (enregistré comme brouillon).'
     FAILED: 'Échec : {errors}'

@@ -41,10 +41,13 @@ en:
     NO_POLITENESS: 'Supertext offers no formal or informal tone for {code}: leave this on Default, otherwise translations into this locale fail.'
     POLITENESS: 'Form of address'
     POLITENESS_HELP: 'How Supertext addresses the reader in this language.'
+    REVIEW: 'Translation review'
+    REVIEW_HELP: 'Translations into this locale go through Supertext’s review service, so reviewers can check and correct them on the website with the Supertext Localization Review extension. Their corrections are used the next time the page is translated.'
     SUGGESTED: 'Default: {language}'
     UNKNOWN: '{code} (not in Supertext’s list)'
     db_SupertextCode: 'Supertext code'
     db_SupertextPoliteness: 'Supertext politeness'
+    db_SupertextReview: 'Supertext translation review'
   Supertext\Silverstripe\Extension\SupertextCMSMainExtension:
     DONE: 'Translated into {locales} (saved as drafts).'
     FAILED: 'Failed: {errors}'

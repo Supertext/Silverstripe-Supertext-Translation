@@ -4,6 +4,7 @@ namespace Supertext\Silverstripe\Extension;
 
 use SilverStripe\Core\Extension;
 use SilverStripe\Core\Validation\ValidationResult;
+use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\i18n\i18n;
@@ -26,11 +27,13 @@ class LocaleExtension extends Extension
     private static array $db = [
         'SupertextCode'       => 'Varchar(20)',
         'SupertextPoliteness' => "Enum(',more,less','')",
+        // Translations into this locale go through Supertext's review service (Supertext::review()).
+        'SupertextReview'     => 'Boolean(0)',
     ];
 
     protected function updateCMSFields(FieldList $fields): void
     {
-        $fields->removeByName(['SupertextCode', 'SupertextPoliteness']);
+        $fields->removeByName(['SupertextCode', 'SupertextPoliteness', 'SupertextReview']);
         $locale = (string) $this->owner->Locale;
         $current = trim((string) $this->owner->getField('SupertextCode'));
         $suggested = $locale !== '' ? LanguageCodes::suggest($locale) : null;
@@ -59,21 +62,26 @@ class LocaleExtension extends Extension
         // Formal/informal only where the chosen Supertext language offers it (or when one is set and needs resetting).
         $politeness = (string) $this->owner->getField('SupertextPoliteness');
         $supports = $code !== null ? LanguageCodes::supportsPoliteness($code) : null;
-        if ($supports === false && $politeness === '') {
-            return;
+        if ($supports !== false || $politeness !== '') {
+            $help = $supports === false
+                ? _t(
+                    self::class . '.NO_POLITENESS',
+                    'Supertext offers no formal or informal tone for {code}: leave this on Default, otherwise translations into this locale fail.',
+                    ['code' => (string) $code]
+                )
+                : _t(self::class . '.POLITENESS_HELP', 'How Supertext addresses the reader in this language.');
+            $fields->addFieldToTab('Root.Main', DropdownField::create('SupertextPoliteness', _t(self::class . '.POLITENESS', 'Form of address'), [
+                ''     => _t(self::class . '.DEFAULT', 'Default'),
+                'more' => _t(self::class . '.FORMAL', 'Formal (Sie, vous)'),
+                'less' => _t(self::class . '.INFORMAL', 'Informal (du, tu)'),
+            ])->setDescription($help));
         }
-        $help = $supports === false
-            ? _t(
-                self::class . '.NO_POLITENESS',
-                'Supertext offers no formal or informal tone for {code}: leave this on Default, otherwise translations into this locale fail.',
-                ['code' => (string) $code]
-            )
-            : _t(self::class . '.POLITENESS_HELP', 'How Supertext addresses the reader in this language.');
-        $fields->addFieldToTab('Root.Main', DropdownField::create('SupertextPoliteness', _t(self::class . '.POLITENESS', 'Form of address'), [
-            ''     => _t(self::class . '.DEFAULT', 'Default'),
-            'more' => _t(self::class . '.FORMAL', 'Formal (Sie, vous)'),
-            'less' => _t(self::class . '.INFORMAL', 'Informal (du, tu)'),
-        ])->setDescription($help));
+
+        $fields->addFieldToTab('Root.Main', CheckboxField::create('SupertextReview', _t(self::class . '.REVIEW', 'Translation review'))
+            ->setDescription(_t(
+                self::class . '.REVIEW_HELP',
+                'Translations into this locale go through Supertext’s review service, so reviewers can check and correct them on the website with the Supertext Localization Review extension. Their corrections are used the next time the page is translated.'
+            )));
     }
 
     /** Saving stores Supertext's spelling of the code ("de_ch" → "de-CH"). */

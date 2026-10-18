@@ -35,14 +35,14 @@ Same tab, client/supertext.js (fetch with the form's SecurityID):
 | `src/Api/` | Wrapper around the Supertext SDK (`SupertextClient`, `CallableTransport`), language codes (`LanguageCodes`), the Commando Center glue (`Reporting`, `PluginHealthTransport`, `StateStore`), the translation files glue (`FileTransfer`, `FileTransferException`), exceptions. No Silverstripe classes (HTTP through a transport callable), unit-tested on their own |
 | `lib/supertext-sdk/` | Bundled copy of the Supertext PHP SDK, namespace `Supertext\Silverstripe\Sdk` (API classes in `Sdk\V1`; see *Supertext SDK*) |
 | `lib/supertext-plugin-health/` | Bundled copy of Supertext Plugin Health (PHP), namespace `Supertext\Silverstripe\PluginHealth` (see *Supertext Plugin Health*) |
-| `src/Supertext.php` | Settings (YAML + `SUPERTEXT_API_KEY` / `SUPERTEXT_API_URL` / `SUPERTEXT_VERSION_REPORTS`), the language mapping, code and tone per locale, the Guzzle transport and client, the permission `SUPERTEXT_TRANSLATE` |
+| `src/Supertext.php` | Settings (YAML + `SUPERTEXT_API_KEY` / `SUPERTEXT_API_URL` / `SUPERTEXT_REVIEW_URL` / `SUPERTEXT_VERSION_REPORTS`), the language mapping, code, tone and *Translation review* per locale, the Guzzle transport and client, the permission `SUPERTEXT_TRANSLATE` |
 | `src/Service/Reports.php` | Version reports and API key check: builds `Api\Reporting` from Silverstripe (base URL, versions, the setting, Guzzle, `DatabaseStateStore`) and runs it at the right moments (see *Commando Center*) |
 | `src/Service/DatabaseStateStore.php`, `src/Model/SupertextState.php` | Table `SupertextState` (`Key`, `Value`): the reporter's JSON state under `reporter` |
 | `src/Control/PingController.php` | Public `GET /supertext/ping` (route in `_config/routes.yml`) |
 | `src/Service/Translator.php` | Field rules, collecting, translating, saving |
 | `src/Extension/SupertextPageExtension.php` | The Supertext tab (fields are not saved into the record: `saveSupertext*()` no-ops) |
 | `src/Extension/SupertextCMSMainExtension.php` | The form action on `CMSMain`, and the actions `supertextExport` / `supertextImport` (see *Translation files*) |
-| `src/Extension/LocaleExtension.php` | `SupertextCode`, `SupertextPoliteness` on Fluent's `Locale` |
+| `src/Extension/LocaleExtension.php` | `SupertextCode`, `SupertextPoliteness`, `SupertextReview` on Fluent's `Locale` |
 | `src/Control/SupertextAdmin.php` | The *Supertext* CMS section: status, latest API key check, plugin version, *Test connection*, version reports on/off and ping address, locales (*Not mapped*, tone warnings), log |
 | `src/PluginVersion.php` | The installed version from `Composer\InstalledVersions` (no second copy in the code) and its GitHub release link for `X.Y.Z` / `vX.Y.Z`; no Silverstripe classes, unit-tested |
 | `src/Model/TranslationLog.php` | Table `SupertextTranslation`: one row per record and target locale and run |
@@ -95,8 +95,10 @@ Auth header: `Authorization: Supertext-Auth-Key <key>`. The header name must be 
 The protocol above, the retries, the language list, the API key check (`Client::checkApiKey()`) and the `data-st-id` document come from the official Supertext PHP SDK ([Supertext/Supertext-API-SDK-and-Guide](https://github.com/Supertext/Supertext-API-SDK-and-Guide)). The module ships a copy in `lib/supertext-sdk/` with its namespace changed from `Supertext\Sdk` to `Supertext\Silverstripe\Sdk` (Composer autoloads it from the module's `composer.json`; `tests/bootstrap.php` too), so sites install nothing extra and another package that requires the SDK itself can't clash with it. `lib/supertext-sdk/COMMIT` names the SDK revision (currently 0.5.0). Everything that talks to the API is in `Sdk\V1` (`Client`, `Languages`, `ApiKeyCheck`, …); only the HTTP transport (`Sdk\Http`), the translation files (`Sdk\Files`) and `Sdk\Supertext::SDK_VERSION` are version-neutral. The vendor script copies `src/` with its subfolders and rewrites every `Supertext\Sdk\…` namespace (`V1` included).
 
 - Never edit `lib/supertext-sdk/`. Fix the SDK in its repository, then run `scripts/vendor-sdk.sh [ref]` (default `main`; `SDK_DIR=/path/to/clone` uses a local clone) and the tests.
-- `src/Api/SupertextClient.php` keeps the module's interface (`translateDocument`, `translateSegments`, `validateApiKey`, `checkApiKey`, transport callable) and turns every SDK error code into a `SupertextException` reason (`REASONS`); `Service\Messages::of()` translates it. A new SDK error code needs a reason there, a `match` arm in `Messages` and its strings in all four `lang/` files.
+- `src/Api/SupertextClient.php` keeps the module's interface (`translateDocument`, `translateSegments`, `validateApiKey`, `checkApiKey`, `forReview`, transport callable), sends the User-Agent `supertext-sdk-php Silverstripe-Supertext-Translation/<version>` (`PluginVersion::current()`, as in the reports) and turns every SDK error code into a `SupertextException` reason (`REASONS`); `Service\Messages::of()` translates it. A new SDK error code needs a reason there, a `match` arm in `Messages` and its strings in all four `lang/` files.
 - PHPStan analyses `src/` only; the SDK has its own checks in its repository.
+
+**Translation review** (`SupertextReview` on the Fluent locale, per target locale): `Translator::send()` takes `$client->forReview(Supertext::review($target))`, a second SDK client with the same key, transport, timeouts and User-Agent whose base URL is `review_url` (default `SupertextClient::REVIEW_URL`, the translation proxy of [Supertext Localization Review](https://github.com/Supertext/Localization-Review-Supertext-Translation); `SUPERTEXT_REVIEW_URL` wins when not empty). It is created once per client, on first use. Each document is uploaded, polled, downloaded and deleted by the same client (the SDK's `translateHtml` round trip). The proxy speaks the same API v1, forwards to the live Supertext API with the module's key, stores every segment per key and serves reviewers' corrections on the next upload, so nothing else changes in the module. `review_url: ''` (or the same URL as the API) means `forReview()` always returns the direct client. The key check (*Test connection*, `supertext-check`, automatic), the reports and the translation files never use the review service. Tests: `SupertextClientTest` (all four calls to the review URL, other languages direct, off without a review URL or with the API URL, the default).
 
 ## Supertext Plugin Health
 
@@ -166,7 +168,7 @@ composer install
 vendor/bin/phpunit
 ```
 
-- `tests/unit/SupertextClientTest.php`: the SDK wrapper: protocol, auth header and prefix, codes sent as given, 429 retries, error reasons (language pair, unsupported language and feature included), clean-up, segments (plain text, HTML, blank, missing), splitting into several documents, the key check, and that every SDK error code has a reason and a `Messages::of()` arm.
+- `tests/unit/SupertextClientTest.php`: the SDK wrapper: protocol, auth header and prefix, the review service client (`forReview`: all four calls to the review URL, other locales direct, off with an empty URL or the API URL, default `REVIEW_URL`), codes sent as given, 429 retries, error reasons (language pair, unsupported language and feature included), clean-up, segments (plain text, HTML, blank, missing), splitting into several documents, the key check, and that every SDK error code has a reason and a `Messages::of()` arm.
 - `tests/unit/LanguageCodesTest.php`: exact matches, the SDK defaults, no guessed regions, the combo box's options and suggestion, saved-code spelling, the mapping for targets and sources, tone support.
 - `tests/unit/ReportingTest.php`: the Commando Center glue with a fake API and a fake center: the `installed` report (fields, callback URL, 3 s timeout, never the key), nothing sent again, `upgraded`, a rejected key reported once, *Test connection*, the `check` report, reports off (key still checked), a missing key, a broken or garbled state store, a state stored by the SDK 0.2 reporter (kept as it is, no new report), the SDK version and the key check's User-Agent, the ping answers.
 - `tests/unit/FileTransferTest.php`: the translation files glue: reference round trip, file names, export with the collector's keys and the locales' codes (unmapped locales as they are), HTML with one locale, nothing to translate, import (`ok` written, `source_changed` only with the option, `untranslated`/`invalid_markup`/`missing` not written, skipped write), another plugin's file, unknown reference, missing page or locale, broken files and the 10 MB limit.
@@ -205,7 +207,8 @@ The public demo is a container built from `demo/Dockerfile`: PHP 8.3 with Apache
 | `DEMO_ADMIN_EMAIL`, `DEMO_ADMIN_PASSWORD` | Administrator (member of *Administrators*) |
 | `DEMO_EDITOR_EMAIL`, `DEMO_EDITOR_PASSWORD` | Editor for automated tests and screenshots: member of **Editors** (*Access to Pages*, *Translate content with Supertext*, view draft content), no locale restrictions, so every locale. Silverstripe's default *Content Authors* group lacks the Supertext permission, so the demo creates this group. |
 | `SUPERTEXT_API_KEY` | Supertext key |
-| `SUPERTEXT_API_URL` | Optional, e.g. a stand-in API |
+| `SUPERTEXT_API_URL` | Optional, e.g. a stand-in API (to try the review service, tick *Translation review* in the locales instead) |
+| `SUPERTEXT_REVIEW_URL` | Optional: another review service than Supertext's (`review_url`; empty keeps the default) |
 | `SUPERTEXT_VERSION_REPORTS` | Optional; `0` turns *Send version information to Supertext* off (on by default; the demo reports like any site) |
 | `SUPERTEXT_REPORT_URL` | Tests only: where version reports go instead of Supertext's center (CI: the stand-in) |
 | `PORT` | Port Apache listens on (Railway sets it) |
@@ -275,5 +278,6 @@ Submitting the package to Packagist is planned.
 - Pages (`SiteTree`) only; Fluent-localised DataObjects in ModelAdmin are not offered yet.
 - Elemental with *indirect* localisation (a separate block area per locale) is not supported.
 - Existing locales keep their URL segment when overwritten.
+- Re-translating overwrites manual changes in the translated fields; no change detection. A translation memory and reviewers' corrections come from the review service when a locale has *Translation review* on; corrections reach Silverstripe only with the next translation (no push).
 - Not on Packagist yet.
 - Human (professional) translation orders are not supported yet (the WordPress plugin has them).

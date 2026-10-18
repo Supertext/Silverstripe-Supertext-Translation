@@ -41,10 +41,13 @@ de:
     NO_POLITENESS: 'Supertext bietet für {code} keine formelle oder informelle Anrede an: Lassen Sie hier «Standard» stehen, sonst schlagen Übersetzungen in diese Sprache fehl.'
     POLITENESS: Anrede
     POLITENESS_HELP: 'Wie Supertext die Leserinnen und Leser in dieser Sprache anspricht.'
+    REVIEW: Übersetzungsprüfung
+    REVIEW_HELP: 'Übersetzungen in diese Sprache laufen über den Prüfdienst von Supertext, damit Prüferinnen und Prüfer sie mit der Erweiterung Supertext Localization Review direkt auf der Website kontrollieren und korrigieren können. Ihre Korrekturen werden beim nächsten Übersetzen der Seite übernommen.'
     SUGGESTED: 'Standard: {language}'
     UNKNOWN: '{code} (nicht in der Liste von Supertext)'
     db_SupertextCode: Supertext-Code
     db_SupertextPoliteness: Supertext-Anrede
+    db_SupertextReview: Supertext-Übersetzungsprüfung
   Supertext\Silverstripe\Extension\SupertextCMSMainExtension:
     DONE: 'Übersetzt in {locales} (als Entwürfe gespeichert).'
     FAILED: 'Fehlgeschlagen: {errors}'

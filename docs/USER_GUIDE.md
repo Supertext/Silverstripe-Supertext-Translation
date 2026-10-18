@@ -39,6 +39,8 @@ Locales the page already exists in show **Already translated** or **Translated w
 
 You can translate from any locale the page has its own content in, e.g. from German into French, by switching to that locale first.
 
+**Translation review:** if your administrator turned on *Translation review* for a locale, reviewers (your colleagues or Supertext linguists) check and correct the translations on the website. Their corrections come into Silverstripe the next time you translate the page into that locale: after a review, translate it again with **Overwrite existing translations**. Texts reviewed once keep their corrected wording in later translations.
+
 ## Export for translation and import the translated file
 
 Instead of translating with Supertext straight away, you can download a page's texts as a file, have it translated elsewhere (a translation tool such as Trados, memoQ or Phrase, a translator, or Supertext's web app) and import the translated file again. Both are at the bottom of the **Supertext** tab. The file holds exactly the texts **Translate** would send: page fields and content blocks, in the locale you are editing.
