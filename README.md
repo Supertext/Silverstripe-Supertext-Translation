@@ -16,6 +16,17 @@ Open a page, go to the **Supertext** tab, tick the locales and click **Translate
 
 ![The Supertext tab of a page in the Silverstripe CMS](docs/images/01-supertext-tab.png)
 
+## Export for translation and import (XLIFF and HTML)
+
+Besides translating with Supertext AI, you can export a page as a file, have it translated elsewhere and import the result.
+
+- **Where:** the export and import section at the bottom of the page's Supertext tab; imports are saved as drafts.
+- **Formats:** XLIFF 1.2 for translation tools such as Trados, memoQ or Phrase (formatting travels as protected tags; several target languages in one file), or HTML (one language per file) for translators or Supertext's web app, which keeps the file's head and `data-st-id` attributes, so the translated file imports as it is.
+- **Import:** the file says what it was exported from and for which language. The translations are written with the same rules as a Supertext AI translation, and a summary shows what was imported and what was skipped: source changed since the export (import those anyway with *Also import texts whose source changed since the export*), not translated, formatting changed, not in the file.
+- **Safe:** files over 10 MB, files from another system and translations that add markup the source doesn't have are refused; uploaded files aren't stored.
+
+Details: [user guide](docs/USER_GUIDE.md#export-for-translation-and-import-the-translated-file).
+
 ## Documentation
 
 | Guide | For |
