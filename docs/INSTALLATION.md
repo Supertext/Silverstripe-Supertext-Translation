@@ -4,7 +4,7 @@ For administrators and developers who install and set up the module. Editors fin
 
 ## Requirements
 
-- Silverstripe CMS 6 (tested with 6.2), PHP 8.3 or later
+- Silverstripe CMS 6 (tested with 6.3), PHP 8.3 or later
 - [Fluent](https://github.com/tractorcow-farm/silverstripe-fluent) 8 with at least two locales
 - Optional: [Elemental](https://github.com/silverstripe/silverstripe-elemental) 6, with blocks localised directly by Fluent (see [Elemental blocks](#elemental-blocks))
 - A Supertext account with an API key: [create an account or log in](https://www.supertext.com/person/en/account/signin), then [generate the key](https://www.supertext.com/en/integrations/api) (see [API key](#api-key))

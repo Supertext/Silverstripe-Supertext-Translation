@@ -179,7 +179,7 @@ CI (`.github/workflows/ci.yml`) on every push and pull request: **test** (PHP li
 
 ## Demo (Railway)
 
-The public demo is a container built from `demo/Dockerfile`: PHP 8.3 with Apache, Silverstripe 6.2 with Fluent, Elemental and this module, locales English (`en_US`, default), Deutsch (`de_CH`), Français (`fr_CH`) and Italiano (`it_CH`) with formal tone, and a sample page with three content blocks. It runs on Railway in the `supertext-cms-demos` project, service `Silverstripe`, region EU West (Amsterdam): <https://silverstripe-production.up.railway.app/> (CMS: `/admin`). Data lives in a `silverstripe` database on the project's MySQL service.
+The public demo is a container built from `demo/Dockerfile`: PHP 8.3 with Apache, Silverstripe 6.3 with Fluent, Elemental and this module, locales English (`en_US`, default), Deutsch (`de_CH`), Français (`fr_CH`) and Italiano (`it_CH`) with formal tone, and a sample page with three content blocks. It runs on Railway in the `supertext-cms-demos` project, service `Silverstripe`, region EU West (Amsterdam): <https://silverstripe-production.up.railway.app/> (CMS: `/admin`). Data lives in a `silverstripe` database on the project's MySQL service.
 
 **Deploys:** Railway builds `main` of this repository (`railway.json` points it at `demo/Dockerfile`).
 
